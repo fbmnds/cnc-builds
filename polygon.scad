@@ -42,24 +42,24 @@ function sq_outer(n, d1, d2, dy) =
      flip_90(r_pts)
      ]); 
 
-function sq_outer_2(n, d1, d2, dy) =
-    let (pts_1   = points_1(n,d1,d2,dy),
+function sq_outer_2(n1, n2, d1, d2, dy) =
+    let (pts_1   = points_1(n1,d1,d2,dy),
          r_pts_1 = revert(pts_1),
-         pts_2   = points_2(n,d1,d2,dy),
+         pts_2   = points_2(n2,d1,d2,dy),
          r_pts_2 = revert(pts_2),
          p = [[0,0], 
-             [n*(d1+d2)+d1,0], 
-             [n*(d1+d2)+d1,n*(d1+d2)+d1], 
-             [0,n*(d1+d2)+d1], 
+             [n1*(d1+d2)+d1,0], 
+             [n1*(d1+d2)+d1,n2*(d1+d2)+d1], 
+             [0,n2*(d1+d2)+d1], 
              ],
          l = flatten([
              [[dy,0]], 
              pts_1, 
-             [[n*(d1+d2)+d1-dy,0]],
-             shift_x(n*(d1+d2)+d1,flip_90(flip_x(pts_2))), 
-             [[n*(d1+d2)+d1-dy,n*(d1+d2)+d1]],
-             shift_y(n*(d1+d2)+d1,(flip_x(r_pts_1))), 
-             [[dy,n*(d1+d2)+d1]],
+             [[n1*(d1+d2)+d1-dy,0]],
+             shift_x(n1*(d1+d2)+d1,flip_90(flip_x(pts_2))), 
+             [[n1*(d1+d2)+d1-dy,n2*(d1+d2)+d1]],
+             shift_y(n2*(d1+d2)+d1,(flip_x(r_pts_1))), 
+             [[dy,n2*(d1+d2)+d1]],
              flip_90(r_pts_2),
              [[dy,0]]
              ]))
@@ -117,8 +117,8 @@ translate([spacer_1,0,0]) polygon(sq_inner(n1, d1, d2, dy));
 
 translate([spacer_1,spacer_1,0]) polygon(sq_outer(n1, d1, d2, dy));
     
-translate([0,spacer_1,0]) polygon(sq_outer_2(n1, d1, d2, dy));    
+translate([0,spacer_1,0]) polygon(sq_outer_2(n1, n2, d1, d2, dy));    
 
-translate([spacer_1,2*spacer_1,0]) polygon(sq_outer(n1, d1, d2, dy));
+translate([spacer_1,1.5*spacer_2,0]) polygon(sq_outer(n1, d1, d2, dy));
     
-translate([0, 2*spacer_1,0]) polygon(sq_outer_2(n1, d1, d2, dy));  
+translate([0, 1.5*spacer_2,0]) polygon(sq_outer_2(n1, n2, d1, d2, dy));  
