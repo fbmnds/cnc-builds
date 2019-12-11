@@ -100,16 +100,25 @@ function sq_inner(n, d1, d2, dy) =
 
 
 
-polygon(sq_inner(3, 1, 1, 0.4));
+n1 =  3;
+n2 =  8; 
+d1 = 10;
+d2 = 10;
+dy =  4;
 
-//translate([0,10,0]) polygon(sq_inner_2(3, 1, 1, 0.4));
-
-translate([8,0,0]) polygon(sq_outer(3, 1, 1, 0.4));
+spacer_1 = 20*(n1+1);
+spacer_2 = 20*(n2+1);
     
-translate([0,8,0]) polygon(sq_outer_2(3, 1, 1, 0.4));    
+polygon(sq_inner(n1, d1, d2, dy));
 
-translate([8,8,0]) polygon(sq_inner(3, 1, 1, 0.4));
+translate([spacer_1,0,0]) polygon(sq_inner(n1, d1, d2, dy));
 
-translate([0,16,0]) polygon(sq_outer(3, 1, 1, 0.4));
+//translate([0,10,0]) polygon(sq_inner_2(n, d1, d2, dy));
+
+translate([spacer_1,spacer_1,0]) polygon(sq_outer(n1, d1, d2, dy));
     
-translate([8, 16,0]) polygon(sq_outer_2(3, 1, 1, 0.4));  
+translate([0,spacer_1,0]) polygon(sq_outer_2(n1, d1, d2, dy));    
+
+translate([spacer_1,2*spacer_1,0]) polygon(sq_outer(n1, d1, d2, dy));
+    
+translate([0, 2*spacer_1,0]) polygon(sq_outer_2(n1, d1, d2, dy));  
