@@ -37,19 +37,8 @@ function points_1(n, d1, d2, dy) =
 function points_2(n, d1, d2, dy) =
     let (pts   = points_1(n,d1,d2,dy))
     [for (i = pts) i[1] == 0 ? [i[0],dy] : [i[0],0] ];
-
-function box_outer(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy) =
-    let (pts_1   = points_1(n1,d1_ac,d2_ac,dy),
-         r_pts_1 = revert(pts_1),
-         pts_2   = points_1(n2,d1_bd,d2_bd,dy),
-         r_pts_2 = revert(pts_2),
-         a       = pts_1,
-         b       = shift_x(n1*(d1_bd+d2_bd)+d1_bd,flip_90(flip_x(pts_2))),
-         c       = shift_y(n2*(d1_ac+d2_ac)+d1_ac,flip_x(r_pts_1)),
-         d       = flip_90(r_pts_2))    
-   flatten([a, b, c, d]); 
         
-function box_outer_4(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy) =
+function box_outer(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy) =
     let (pts_1   = points_1(n1,d1_ac,d2_ac,dy),
          r_pts_1 = revert(pts_1),
          pts_2   = points_1(n2,d1_bd,d2_bd,dy),
@@ -151,4 +140,6 @@ module box2 (n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2) {
 
 translate([-2*spacer_1,0,0]) box2(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2);
 
-polygon(box_outer_4(n1, n2, d1_ac, d2_ac, 1.2*d1_bd, 1.2*d2_bd, dy));
+translate([0,spacer_1,0])  polygon(box_outer(n1, n2, d1_ac, d2_ac, 1.2*d1_bd, 1.2*d2_bd, dy));
+
+polygon(box_inner(n1, d1_ac, d2_ac, dy));
