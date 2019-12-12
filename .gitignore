@@ -1,1 +1,6 @@
+!.gitignore
 /build
+!*.scad
+!*.c
+!*.nc
+!*.dxf
