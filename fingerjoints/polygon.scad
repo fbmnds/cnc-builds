@@ -11,6 +11,16 @@ function shift_y(dy, list) = [ for (i=list) [i[0], i[1]+dy] ];
 
 function revert(list) = [ for (i=[len(list)-1:-1:0]) list[i] ];  
 
+function cut_bd (h, eps, list) = 
+    let (l = [ for (i = list) if (i[0] < h - eps) i ])
+    //concat([h, l[0][1]], l, [h, l[len(l)-1][1]]);
+    l;
+    
+function cut_ac (h, eps, list) = 
+    let (l = [ for (i = list) if (i[1] < h - eps) [i[0],i[1]] ])
+    //concat([l[0][0],h], l, [l[len(l)-1][0],h]);
+    l;
+    
 function is_elem(item, list) = 
     len([ for (i=list) if (abs(i[0] - item[0]) < 0.01 && abs(i[1] - item[1]) < 0.01) i ]) == 0 
         ? false : true;
@@ -121,7 +131,8 @@ d2_ac = 10;
 d1_bd = 10;
 d2_bd = 10;
 dy =  4;
-
+eps = 0.01;
+    
 spacer_1 = 20*(n1+1);
 spacer_2 = 20*(n2+1);
 
@@ -136,6 +147,10 @@ module box2 (n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2) {
 
 translate([-2*spacer_1,0,0]) box2(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2);
 
-translate([spacer_1,spacer_1,0])  polygon(box_outer(n1, n2, d1_ac, d2_ac, 1.2*d1_bd, 1.2*d2_bd, dy));
+translate([spacer_1,spacer_1,0]) polygon(box_outer(n1, n2, d1_ac, d2_ac, 1.2*d1_bd, 1.2*d2_bd, dy));
 
 polygon(box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy));
+
+translate([0,-0.5*spacer_1,0]) polygon(cut_ac(n1*d1_ac, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));
+
+translate([0,spacer_1,0]) polygon(cut_bd(n2*d1_bd, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));
