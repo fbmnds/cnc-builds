@@ -111,27 +111,23 @@ function sq_inner(n, d1, d2, dy) =
                          ]))
     shift_y(dy,[ for (i = l) if (is_not_elem(i,p)) i ]);
 
+module box () {
+    n1 =  6;
+    n2 =  8; 
+    d1 = 10;
+    d2 = 10;
+    dy =  4;
 
+    spacer_1 = 20*(n1+1);
+    spacer_2 = 20*(n2+1);
+        
+    polygon(sq_inner(n1, d1, d2, dy));
+    translate([spacer_1,0,0]) polygon(sq_inner(n1, d1, d2, dy));
+    //translate([0,10,0]) polygon(sq_inner_2(n, d1, d2, dy));
+    translate([spacer_1,spacer_1,0]) polygon(sq_outer(n1, n2, d1, d2, dy));
+    translate([0,spacer_1,0]) polygon(sq_outer_2(n1, n2, d1, d2, dy));    
+    translate([spacer_1,spacer_1+spacer_2,0]) polygon(sq_outer(n1, n2, d1, d2, dy));   
+    translate([0,spacer_1+spacer_2,0]) polygon(sq_outer_2(n1, n2, d1, d2, dy));  
+}
 
-n1 =  3;
-n2 =  8; 
-d1 = 10;
-d2 = 10;
-dy =  4;
-
-spacer_1 = 20*(n1+1);
-spacer_2 = 20*(n2+1);
-    
-polygon(sq_inner(n1, d1, d2, dy));
-
-translate([spacer_1,0,0]) polygon(sq_inner(n1, d1, d2, dy));
-
-//translate([0,10,0]) polygon(sq_inner_2(n, d1, d2, dy));
-
-translate([spacer_1,spacer_1,0]) polygon(sq_outer(n1, n2, d1, d2, dy));
-    
-translate([0,spacer_1,0]) polygon(sq_outer_2(n1, n2, d1, d2, dy));    
-
-translate([spacer_1,1.5*spacer_2,0]) polygon(sq_outer(n1, n2, d1, d2, dy));
-    
-translate([0, 1.5*spacer_2,0]) polygon(sq_outer_2(n1, n2, d1, d2, dy));  
+box();
