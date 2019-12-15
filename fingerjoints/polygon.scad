@@ -147,12 +147,11 @@ module box2 (n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2) {
     translate([0,spacer_1+spacer_2,0]) polygon(box_outer_2(n1, n2, d1_ac, d2_ac, dy));  
 }
 
-translate([-2*spacer_1,0,0]) box2(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2);
+translate ([-2*spacer_1,0,0]) {
+    translate([-2*spacer_1,0,0]) box2(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy, spacer_1, spacer_2);
+    translate([spacer_1,spacer_1,0]) polygon(box_outer(n1, n2, d1_ac, d2_ac, 1.2*d1_bd, 1.2*d2_bd, dy));
+    polygon(box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy));
+    translate([0,-0.5*spacer_1,0]) polygon(cut_ac(n1*d1_ac, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));
+    translate([10,spacer_1,80]) polygon(cut_bd(n2*(d1_bd+d2_bd)*0.6, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));    
+}
 
-translate([spacer_1,spacer_1,0]) polygon(box_outer(n1, n2, d1_ac, d2_ac, 1.2*d1_bd, 1.2*d2_bd, dy));
-
-polygon(box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy));
-
-translate([0,-0.5*spacer_1,0]) polygon(cut_ac(n1*d1_ac, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));
-
-translate([0,spacer_1,0]) polygon(cut_bd(n2*(d1_bd+d2_bd)*0.6, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));
