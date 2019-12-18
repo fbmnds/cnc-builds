@@ -1,9 +1,11 @@
 
+function round_e(x,e) = round(e*x)/e;
+
 function flatten(list) = [ for (i = list, v = i) v ];
 
 function flip_x(list) = [ for (i=list) [i[0], -1*i[1]] ];
 
-function flip_90(list) = [ for (i=list) [i[1], i[0]] ];
+function flip_45(list) = [ for (i=list) [i[1], i[0]] ];
 
 function shift_x(dx, list) = [ for (i=list) [i[0]+dx, i[1]] ];
 
@@ -35,7 +37,7 @@ function is_not_elem(item, list) = is_elem(item, list) ? false : true;
 // 3 2*d1+d2   2*d1+2*d2    round(i/2)*d1+floor(i/2)*d2   round(i/2)*d1+round(i/2)*d2
 // 4 2*d1+2*d2 3*d1+2*d2    (i/2)*(d1+d2)                 (i/2+1)*d1+(i/2)*d2
 //    __    __
-// __|  |__|  |__...
+// __|  |__|  ...
 // 
 function points_1(n, d1, d2, dy) = 
     flatten([ 
@@ -56,9 +58,9 @@ function box_outer(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy) =
          pts_2   = points_1(n2,d1_bd,d2_bd,dy),
          r_pts_2 = revert(pts_2),
          a       = pts_1,
-         b       = shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_90(flip_x(pts_2))),
+         b       = shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_45(flip_x(pts_2))),
          c       = shift_y(n2*(d1_bd+d2_bd)+d1_bd,flip_x(r_pts_1)),
-         d       = flip_90(r_pts_2))    
+         d       = flip_45(r_pts_2))    
    flatten([a, b, c, d]); 
 
 function box_outer_2(n1, n2, d1_ac, d2_ac, dy) =
@@ -67,9 +69,9 @@ function box_outer_2(n1, n2, d1_ac, d2_ac, dy) =
          pts_2   = points_2(n2,d1_ac,d2_ac,dy),
          r_pts_2 = revert(pts_2))    
    flatten([pts_1, 
-     shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_90(flip_x(pts_2))), 
+     shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_45(flip_x(pts_2))), 
      shift_y(n2*(d1_ac+d2_ac)+d1_ac,(flip_x(r_pts_1))), 
-     flip_90(r_pts_2)
+     flip_45(r_pts_2)
      ]); 
 
 function box_outer_3(n1, n2, d1_ac, d2_ac, dy) =
@@ -86,11 +88,11 @@ function box_outer_3(n1, n2, d1_ac, d2_ac, dy) =
              [[dy,0]], 
              pts_1, 
              [[n1*(d1_ac+d2_ac)+d1_ac-dy,0]],
-             shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_90(flip_x(pts_2))), 
+             shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_45(flip_x(pts_2))), 
              [[n1*(d1_ac+d2_ac)+d1_ac-dy,n2*(d1_ac+d2_ac)+d1_ac]],
              shift_y(n2*(d1_ac+d2_ac)+d1_ac,(flip_x(r_pts_1))), 
              [[dy,n2*(d1_ac+d2_ac)+d1_ac]],
-             flip_90(r_pts_2),
+             flip_45(r_pts_2),
              [[dy,0]]
              ]))
      [ for (i = l) if (is_not_elem(i,p)) i ];         
@@ -108,9 +110,9 @@ function box_inner(n1, n2, d1_ac, d2_ac, d1_bd, d2_bd, dy) =
               [0,n2*(d1_bd+d2_bd)+d1_bd-2*dy],
               ], 
          a = flip_x(pts_1),
-         b = shift_y(-1*dy,shift_x(-1*dy,shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_90(pts_2)))),
+         b = shift_y(-1*dy,shift_x(-1*dy,shift_x(n1*(d1_ac+d2_ac)+d1_ac,flip_45(pts_2)))),
          c = shift_y(n2*(d1_bd+d2_bd)+d1_bd-2*dy,r_pts_1),
-         d = shift_y(-1*dy,shift_x(dy,flip_90(flip_x(r_pts_2)))),
+         d = shift_y(-1*dy,shift_x(dy,flip_45(flip_x(r_pts_2)))),
          l = flatten([
                 [[dy,0]],
                 a, 
@@ -155,3 +157,36 @@ translate ([-2*spacer_1,0,0]) {
     translate([10,spacer_1,80]) polygon(cut_bd(n2*(d1_bd+d2_bd)*0.6, eps, box_inner(n2, n1, d1_bd, d2_bd, d1_ac, d2_ac, dy)));    
 }
 
+//       __         __
+// _____|  |__...__|  |_____
+// 
+function points_var_1(l, d1, d2, dy) = 
+    let (m    = floor(l/(d1+d2)),
+         tail = l - m*(d1+d2), 
+         n    = (tail - d1) > 0 ? m : m-1,
+         off  = (tail - d1) > 0 ? round_e((tail-d1)/2,10) : round_e((tail+d1)/2,10))
+    concat([[0,0],[off,0]], shift_x(off, points_1(n,d1,d2,dy)),[[l,0]]);
+        
+    
+
+//  _____    ..    _____
+//       |__|  |__|
+// 
+function points_var_2(dy, pts) = [ for (i = pts) i[1] == 0 ? [i[0],dy] : [i[0],0] ];
+
+
+// size (l1+2*dy) x (l2+2*dy)
+//     
+function box_var_inner(l1, l2, d1_1, d1_2, d2_1, d2_2, dy) =
+    let (p_l1 = points_var_1(l1, d1_1, d1_2, dy),
+         p_a  = points_var_2(dy, p_l1),
+         p_c  = revert(p_l1),
+         p_l2 = points_var_1(l2, d2_1, d2_2, dy),
+         p_b  = flip_45(points_var_2(dy, p_l2)),
+         p_d  = flip_45(revert(p_l2)))
+    flatten([shift_x(dy,    p_a),
+             shift_x(0,    shift_y(dy,    p_b)),
+             shift_x(dy,    shift_y(l2+dy, p_c)),
+             shift_x(l1+dy, shift_y(dy, p_d))]);
+
+polygon(box_var_inner(112,108,10,10,10,10,4));
