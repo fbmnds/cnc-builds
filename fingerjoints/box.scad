@@ -198,23 +198,60 @@ function box_var_outer_1(lx, ly, d1_1, d1_2, d2_1, d2_2, dy) =
     let (l1   = lx - 2*dy,
          l2   = ly - 2*dy,
          p_a  = points_var_1(l1, d1_1, d1_2, dy),
-         p_c  = revert(shift_flip(dy,p_a)),
+         p_c  = shift_x(dy, revert(shift_flip(dy,p_a))),
          p_l2 = concat([[0,0]], shift_x(dy,points_var_1(l2, d2_1, d2_2, dy)), [[ly,0]]),
          p_b  = flip_45(flip_x(p_l2)),
          p_d  = flip_45(revert(p_l2)))
-    flatten([p_a,
-             shift_x(l1+dy, p_b),
+    flatten([shift_x(dy,p_a),
+             shift_x(lx, p_b),
              shift_y(l2+dy, p_c),
              p_d]);
 
+// size lx * ly
+// 
+function box_var_outer_2(lx, ly, d1_1, d1_2, d2_1, d2_2, dy) =
+    let (l1   = lx - 2*dy,
+         l2   = ly - 2*dy,
+         p_a  = shift_x(dy,points_var_1(l1, d1_1, d1_2, dy)),
+         p_c  = revert(shift_flip(dy,p_a)),
+         p_l2 = concat([[0,0]], shift_x(dy,points_var_1(l2, d2_1, d2_2, dy)), [[ly,0]]),
+         p_d  = flip_45(revert(flip_x(p_l2))),
+         p_b  = flip_45(p_l2))
+    flatten([p_a,
+             shift_x(l1+dy, p_b),
+             shift_y(l2+dy, p_c),
+             shift_x(dy,p_d)]);
+
 lx = 120;
 ly = 116;
+lz = 60;
 spacer_x = lx + 8;
 spacer_y = ly + 8;
+spacer_z = lz + 8;
 
-difference() {
-    polygon([[0,0],[lx,0],[lx,ly],[0,ly],[0,0]]);
-    polygon(box_var_inner(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+module face (p) {
+    difference(p) {
+        polygon([[0,0],[lx,0],[lx,ly],[0,ly],[0,0]]);
+        polygon(p);
+    }
 }
 
-translate ([spacer_x,0,0]) polygon(box_var_outer_1(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+module box (lx, ly, lz) {
+    polygon(box_var_inner(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy)); 
+    translate ([spacer_x,0,0]) polygon(box_var_inner(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([0,spacer_y,0]) polygon(box_var_outer_1(ly,lz,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([spacer_x,spacer_y,0]) polygon(box_var_outer_2(lx,lz,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([0,spacer_y+spacer_z,0]) polygon(box_var_outer_1(ly,lz,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([spacer_x,spacer_y+spacer_z,0]) polygon(box_var_outer_2(lx,lz,d1_ac,d2_ac,d1_bd,d2_bd,dy));    
+}
+
+box(lx,ly,lz);
+translate ([2*spacer_x,0,0]) polygon(flip_45(box_var_outer_1(ly,lz,d1_ac,d2_ac,d1_bd,d2_bd,dy))); 
+
+translate([0,-1*(spacer_y+ly+10),0]) {
+    face(box_var_inner(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([spacer_x,0,0]) face(box_var_inner(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([0,spacer_y,0]) face(box_var_outer_1(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));
+    translate ([spacer_x,spacer_y,0]) face(box_var_outer_2(lx,ly,d1_ac,d2_ac,d1_bd,d2_bd,dy));    
+}
+
