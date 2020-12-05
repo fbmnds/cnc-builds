@@ -1,26 +1,5 @@
 
-(defpackage #:fingerjoints
-  (:use #:cl)
-  (:export #:round_d-3
-           #:eql-c
-           #:eql-l
-           #:eql_d-3
-           #:flip-x
-           #:flip-y
-           #:flip-45
-           #:shift-x
-           #:shift-y
-           #:shift-flip
-           #:shift-to-llc
-           #:cut-bd
-           #:cut-ac
-           #:box-var-inner
-           #:box-var-outer-1
-           #:box-var-outer-2
-           #:box
-           #:emitt))
-
-(in-package #:fingerjoints)
+(in-package #:paths/box)
 
 (defun round_d-3 (x) (/ (round x 0.001) 1000))
 
@@ -163,7 +142,7 @@
      (shift-x (* 2 spacer-x) outer-box-1)
      (shift-x (+ (* 2 spacer-x) spacer-y) outer-box-1))))
 
-(defun box-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z)
+(defun box-cut-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z)
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-1 (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy)))
@@ -175,20 +154,19 @@
      (shift-x (* 2 spacer-x) (cut-bd h outer-box-1))
      (shift-x (+ (* 2 spacer-x) spacer-y) (cut-bd h outer-box-1)))))
 
-(defun emitt-c (c &optional (v 3))
+(defun emitt-cons (c &optional (v 3))
   (if (endp c)
       ""
       (format nil "[~v$,~a]" v (car c) (format nil "~v$" v (cdr c)))))
 
 (defun emitt (l &optional (v 3))
-  (let ((l (mapcar #'(lambda (c) (emitt-c c v)) l)))
+  (let ((l (mapcar #'(lambda (c) (emitt-cons c v)) l)))
     (format nil "polygon([~a]);"
             (reduce #'(lambda (c1 c2)
                         (if c1
                             (format nil "~a,~a" c1 c2)
                             c2))
                     l :initial-value nil))))
-
 
 (defun emitt-box (b &optional (v 3))
   (reduce #'(lambda (l1 l2)
@@ -197,52 +175,3 @@
                   (emitt l2 v)))
           b :initial-value nil))
 
-(defpackage #:fingerjoints/tests
-  (:use #:cl #:fingerjoints)
-  (:export #:run-tests))
-
-(in-package #:fingerjoints/tests)
-
-(defparameter l1 '((1 . 1) (11 . 1) (11 . 5) (1 . 5)))
-(defparameter l2 '((0 . 0) (10 . 0) (10 . 5) (15 . 5)))
-
-(defparameter d1-ac 4)
-(defparameter d2-ac 4)
-(defparameter d1-bd 4)
-(defparameter d2-bd 4)
-(defparameter dy  2.5)
-(defparameter eps 0.01)
-
-(defparameter lx (+ 50 (* 2 dy)))
-(defparameter ly (+ 20 (* 2 dy)))
-(defparameter lz ly)
-(defparameter spacer-x (+ lx 4))
-(defparameter spacer-y (+ ly 4))
-(defparameter spacer-z (+ lz 4))
-
-(defparameter e-box
-  (emitt-box
-   (box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z)))
-
-(defun run-tests ()
-  (assert (equal (flip-x l1) '((1 . -1) (11 . -1) (11 . -5) (1 . -5))))
-  (assert (equal (flip-y l1) '((-1 . 1) (-11 . 1) (-11 . 5) (-1 . 5))))
-  (assert (equal (flip-45 l1) '((1 . 1) (1 . 11) (5 . 11) (5 . 1))))
-
-  (assert (equal (shift-x 1 l1) '((2 . 1) (12 . 1) (12 . 5) (2 . 5))))
-  (assert (equal (shift-y 1 l1) '((1 . 2) (11 . 2) (11 . 6) (1 . 6))))
-  (assert (equal (shift-flip 5 l2) '((0 . 5) (10 . 5) (10 . 0) (15 . 0))))
-
-  (assert (eql_d-3 l1 l1))
-  (assert (eql_d-3 l2 l2))
-  (assert (not (eql_d-3 l1 l2)))
-  
-  (assert (eql_d-3 (flip-x l1) '((1 . -1) (11 . -1) (11 . -5) (1 . -5))))
-  (assert (eql_d-3 (flip-y l1) '((-1 . 1) (-11 . 1) (-11 . 5) (-1 . 5))))
-  (assert (eql_d-3 (flip-45 l1) '((1 . 1) (1 . 11) (5 . 11) (5 . 1))))
-
-  (assert (eql_d-3 (shift-x 1 l1) '((2 . 1) (12 . 1) (12 . 5) (2 . 5))))
-  (assert (eql_d-3 (shift-y 1 l1) '((1 . 2) (11 . 2) (11 . 6) (1 . 6))))
-  (assert (eql_d-3 (shift-flip 5 l2) '((0 . 5) (10 . 5) (10 . 0) (15 . 0))))
-
-  (assert (eql_d-3 l2 (shift-to-llc '((1 . 5) (1 . 1) (11 . 1) (11 . 5))))))
