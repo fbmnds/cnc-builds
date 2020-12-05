@@ -21,21 +21,33 @@
 
 ;; Display
 (defparameter *path* nil)
+(defparameter *paths* nil)
 
-(defmethod glut:display ((window window))
+(defmethod glut:display-window ((window window))
   (gl:clear :color-buffer-bit)               ; clear buffer
 
   (gl:ortho (* -2 *aspect-ratio*) (* 2 *aspect-ratio*) -2 2 -1 1)
   (gl:matrix-mode :modelview)
   (gl:load-identity)
   
-  (gl:begin :line-loop)
-  (mapc #'(lambda (c)
-            (%gl:vertex-2d (/ (* *mm-to-px* (car c)) *height*)
-                           (/ (* *mm-to-px* (cdr c)) *width*)))
-        *path*)
-  (gl:end)
-  (glut:swap-buffers))                                ; show window
+  (if *path*
+      (progn
+        (gl:begin :line-loop)
+        (mapc #'(lambda (c)
+                  (%gl:vertex-2d (/ (* *mm-to-px* (car c)) *height*)
+                                 (/ (* *mm-to-px* (cdr c)) *width*)))
+              *path*)
+        (gl:end))
+      (mapc #'(lambda (path)
+                (progn
+                  (gl:begin :line-loop)
+                  (mapc #'(lambda (c)
+                            (%gl:vertex-2d (/ (* *mm-to-px* (car c)) *height*)
+                                           (/ (* *mm-to-px* (cdr c)) *width*)))
+                        path)
+                  (gl:end)))
+            *paths*))
+  (glut:swap-buffers))  ; show window
 
 ;; Main
 (defun view (path &optional width height)
@@ -45,24 +57,11 @@
   (setf *aspect-ratio* (/ *width* *height*))
   (glut:display-window (make-instance 'window)))  ; create window
 
-(defparameter l1 '((1 . 1) (11 . 1) (11 . 5) (1 . 5)))
-(defparameter l2 '((0 . 0) (10 . 0) (10 . 5) (15 . 5)))
-
-(defparameter d1-ac 4)
-(defparameter d2-ac 4)
-(defparameter d1-bd 4)
-(defparameter d2-bd 4)
-(defparameter dy  2.5)
-(defparameter eps 0.01)
-
-(defparameter lx (+ 50 (* 2 dy)))
-(defparameter ly (+ 20 (* 2 dy)))
-(defparameter lz ly)
-(defparameter spacer-x (+ lx 4))
-(defparameter spacer-y (+ ly 4))
-(defparameter spacer-z (+ lz 4))
-
-(defparameter tbox
-  (paths/box:box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z))
-
+(defun multi-view (paths &optional width height)
+  (setf *path* nil)
+  (setf *paths* paths)
+  (when width (setf *width* (floor (* *mm-to-px* 1.1 width))))
+  (when height (setf *height* (floor (* *mm-to-px* 1.1 height))))
+  (setf *aspect-ratio* (/ *width* *height*))
+  (glut:display-window (make-instance 'window)))
 

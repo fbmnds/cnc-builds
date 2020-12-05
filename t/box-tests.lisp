@@ -46,4 +46,6 @@
 
   (assert (eql_d-3 l2 (shift-to-llc '((1 . 5) (1 . 1) (11 . 1) (11 . 5))))))
 
-(defun run-view-tests () (paths/view:view (car tbox)))
+(defun run-view-tests ()
+  (paths/view:view (car tbox) 100 100)
+  (paths/view:multi-view tbox 200 200))

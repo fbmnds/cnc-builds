@@ -44,7 +44,8 @@
   (:use #:cl)
   (:local-nicknames (#:gl #:cl-opengl)
                     (#:glut #:cl-glut))
-  (:export #:view))
+  (:export #:view
+           #:multi-view))
 
 (defpackage #:paths/box-tests
   (:use #:cl #:paths #:paths/box #:paths/view)
