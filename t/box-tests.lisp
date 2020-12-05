@@ -18,9 +18,10 @@
 (defparameter spacer-y (+ ly 4))
 (defparameter spacer-z (+ lz 4))
 
-(defparameter e-box
-  (emitt-box
-   (box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z)))
+(defparameter tbox
+  (box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z))
+
+(defparameter e-box (emitt-box tbox))
 
 (defun run-tests ()
   (assert (equal (flip-x l1) '((1 . -1) (11 . -1) (11 . -5) (1 . -5))))
@@ -44,3 +45,5 @@
   (assert (eql_d-3 (shift-flip 5 l2) '((0 . 5) (10 . 5) (10 . 0) (15 . 0))))
 
   (assert (eql_d-3 l2 (shift-to-llc '((1 . 5) (1 . 1) (11 . 1) (11 . 5))))))
+
+(defun run-view-tests () (paths/view:view (car tbox)))

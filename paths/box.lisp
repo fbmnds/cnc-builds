@@ -62,9 +62,9 @@
          (p-d (flip-45 (reverse p-l2))))
     (concatenate 'list
                  (shift-x dy p-a)
-                 (shift-y dy p-b)
+                 (cdr (nreverse (shift-x (+ l1 dy) (shift-y dy p-d))))
                  (shift-x dy (shift-y (+ l2 dy) p-c))
-                 (shift-x (+ l1 dy) (shift-y dy p-d)))))
+                 (cdr (nreverse (shift-y dy p-b))))))
 
 ;; size lx * ly
 (defun box-var-outer-1 (lx ly d1-1 d1-2 d2-1 d2-2 dy)
