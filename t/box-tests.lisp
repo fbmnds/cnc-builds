@@ -44,8 +44,34 @@
   (assert (eql_d-3 (shift-y 1 l1) '((1 . 2) (11 . 2) (11 . 6) (1 . 6))))
   (assert (eql_d-3 (shift-flip 5 l2) '((0 . 5) (10 . 5) (10 . 0) (15 . 0))))
 
-  (assert (eql_d-3 l2 (shift-to-llc '((1 . 5) (1 . 1) (11 . 1) (11 . 5))))))
+  (assert (eql_d-3 l1 (shift-to-llc '((1 . 5) (1 . 1) (11 . 1) (11 . 5)))))
+
+  (let ((x '(1 2 3 4 5)))
+    (assert (equal (group 3 x)
+                   '((1 2 3) (2 3 4) (3 4 5) (4 5 1) (5 1 2))))
+    (setf x '(1 2 3 4 5 6))
+    (assert (equal (group 3 x)
+                   '((1 2 3) (2 3 4) (3 4 5) (4 5 6) (5 6 1) (6 1 2))))
+    (setf x '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 0)))
+    (assert (equal (shift-corner-+ 1.5 (car x) (cadr x) (caddr x))
+                   '(11.0 . 4.0)))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)
-  (paths/view:multi-view tbox 200 200))
+  (paths/view:multi-view tbox 200 200)
+  (paths/view:multi-view
+   (list (remove-if #'null
+                    (shift-path-- 1.5 (car tbox)))
+         (car tbox)))
+  (paths/view:multi-view
+   (list (remove-if #'null
+                    (shift-path-- 1.5 (caddr tbox)))
+         (caddr tbox)))
+  (paths/view:multi-view
+   (append tbox
+           (mapcar #'(lambda (l)
+                       (remove-if #'null (shift-path-- 1.5 l)))
+                   tbox))))
+
+
+
