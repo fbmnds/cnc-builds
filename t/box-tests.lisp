@@ -46,6 +46,15 @@
 
   (assert (eql_d-3 l1 (shift-to-llc '((1 . 5) (1 . 1) (11 . 1) (11 . 5)))))
 
+  (assert (in-row-p '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 2.5))))
+  (assert (in-row-p '((9.5 . 2.5) (9.5 . 2.5) (9.5 . 0.0))))
+  (assert (not (in-row-p '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 0.0)))))
+
+  (assert (equal (stats (car tbox))
+                 '(:LEN 58 :MAX-X 55.0 :MIN-X 0 :MAX-Y 25.0 :MIN-Y 0)))
+  (assert (equal (stats-acc tbox)
+                 (:LEN 308 :MAX-X 172.0 :MIN-X 0 :MAX-Y 54.0 :MIN-Y 0)))
+  
   (let ((x '(1 2 3 4 5)))
     (assert (equal (group 3 x)
                    '((1 2 3) (2 3 4) (3 4 5) (4 5 1) (5 1 2))))
@@ -71,6 +80,9 @@
    (append tbox
            (mapcar #'(lambda (l)
                        (remove-if #'null (shift-path-- 1.5 l)))
+                   tbox)
+           (mapcar #'(lambda (l)
+                       (remove-if #'null (shift-path-+ 1.5 l)))
                    tbox))))
 
 

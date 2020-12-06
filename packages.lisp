@@ -38,7 +38,11 @@
            #:shift-corner-+
            #:shift-corner--
            #:shift-path-+
-           #:shift-path--))
+           #:shift-path--
+           #:in-row-p
+           #:stats
+           #:stats-acc
+           #:trim-path))
 
 (defpackage #:paths/view
   (:use #:cl)

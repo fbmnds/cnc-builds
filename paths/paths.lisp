@@ -93,15 +93,56 @@
                det)))
     (c+ (c* r n1) (c- c2 (c* l c-1-2)))))
 
+(defun in-row-p (c)
+  (ignore-errors (or (= (caar c) (caadr c) (caaddr c))
+                     (= (cdar c) (cdadr c) (cdaddr c)))))
+
+(defun stats (p)
+  (loop for c in p
+        counting c into len
+        maximizing (car c) into max-x
+        minimizing (car c) into min-x
+        maximizing (cdr c) into max-y
+        minimizing (cdr c) into min-y
+        finally
+        (return (list :len len :max-x max-x :min-x min-x
+                      :max-y max-y :min-y min-y))))
+
+(defun stats-acc (ps)
+  (loop for s in (mapcar #'stats ps)
+        summing (nth 1 s) into len
+        maximizing (nth 3 s) into max-x
+        minimizing (nth 5 s) into min-x
+        maximizing (nth 7 s) into max-y
+        minimizing (nth 9 s) into min-y
+        finally
+        (return (list :len len :max-x max-x :min-x min-x
+                      :max-y max-y :min-y min-y))))
+
+(defun trim-path (p &optional (len (length p)))
+  (labels ((not-dup (j)
+             (cond ((zerop j))
+                   (t (not (c= (nth (1- j) p) (nth j p))))))
+           (test (len-1 q j)
+             (cond ((zerop j))
+                   ((= j len-1) (not (c= (nth 0 q) (nth j q))))
+                   (t (not (in-row-p (list (nth (1- j) q)
+                                           (nth j q)
+                                           (nth (1+ j) q))))))))
+    (let* ((q (loop for i from 0 to (1- len)
+                    when (not-dup i) collect (nth i p)))
+           (len-1 (1- (length q))))
+      (loop for i from 0 to len-1 when (test len-1 q i) collect (nth i q)))))
+
 (defun shift-path-+ (r l)
   (mapcar #'(lambda (c)
               (ignore-errors (shift-corner-+ r (car c) (cadr c) (caddr c))))
-          (group 3 l)))
+          (group 3 (trim-path l))))
 
 (defun shift-path-- (r l)
   (mapcar #'(lambda (c)
               (ignore-errors (shift-corner-- r (car c) (cadr c) (caddr c))))
-          (group 3 l)))
+          (group 3 (trim-path l))))
 
 
 #|
