@@ -20,17 +20,19 @@
                      (t (nreverse acc)))))
       (when l (rec l nil)))))
 
-(defun expand-call (type expr)
-  `(,(car expr) ,@(mapcar #'(lambda (a)
-                              `(with-type ,type ,a))
-                          (cdr expr))))
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (defun expand-call (type expr)
+    `(,(car expr) ,@(mapcar #'(lambda (a)
+                                `(with-type ,type ,a))
+                            (cdr expr)))))
 
-(defun binarize (expr)
-  (if (and (nthcdr 3 expr)
-           (member (car expr) '(+ - * /)))
-      (destructuring-bind (op a1 a2 . rest) expr
-        (binarize `(,op (,op ,a1 ,a2) ,@rest)))
-      expr))
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (defun binarize (expr)
+    (if (and (nthcdr 3 expr)
+             (member (car expr) '(+ - * /)))
+        (destructuring-bind (op a1 a2 . rest) expr
+          (binarize `(,op (,op ,a1 ,a2) ,@rest)))
+        expr)))
 
 (defmacro with-type (type expr)
   `(the ,type ,(if (atom expr)
