@@ -34,16 +34,17 @@
       (progn
         (gl:begin :line-loop)
         (mapc #'(lambda (c)
-                  (%gl:vertex-2d (/ (* *mm-to-px* (car c)) *height*)
-                                 (/ (* *mm-to-px* (cdr c)) *width*)))
+                  (%gl:vertex-2d (- (/ (* *mm-to-px* (car c)) *height*) 0.9)
+                                 (- (/ (* *mm-to-px* (cdr c)) *width*) 0.9)))
               *path*)
         (gl:end))
       (mapc #'(lambda (path)
                 (progn
                   (gl:begin :line-loop)
                   (mapc #'(lambda (c)
-                            (%gl:vertex-2d (/ (* *mm-to-px* (car c)) *height*)
-                                           (/ (* *mm-to-px* (cdr c)) *width*)))
+                            (%gl:vertex-2d
+                             (- (/ (* *mm-to-px* (car c)) *height*) 0.9)
+                             (- (/ (* *mm-to-px* (cdr c)) *width*) 0.9)))
                         path)
                   (gl:end)))
             *paths*))
