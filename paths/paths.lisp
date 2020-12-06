@@ -135,14 +135,18 @@
       (loop for i from 0 to len-1 when (test len-1 q i) collect (nth i q)))))
 
 (defun shift-path-+ (r l)
-  (mapcar #'(lambda (c)
-              (ignore-errors (shift-corner-+ r (car c) (cadr c) (caddr c))))
-          (group 3 (trim-path l))))
+  (remove-if #'null
+             (mapcar #'(lambda (c)
+                         (ignore-errors
+                          (shift-corner-+ r (car c) (cadr c) (caddr c))))
+                     (group 3 (trim-path l)))))
 
 (defun shift-path-- (r l)
-  (mapcar #'(lambda (c)
-              (ignore-errors (shift-corner-- r (car c) (cadr c) (caddr c))))
-          (group 3 (trim-path l))))
+  (remove-if #'null
+             (mapcar #'(lambda (c)
+                         (ignore-errors
+                          (shift-corner-- r (car c) (cadr c) (caddr c))))
+                     (group 3 (trim-path l)))))
 
 
 #|
