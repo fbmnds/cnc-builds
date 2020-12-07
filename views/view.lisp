@@ -19,7 +19,7 @@
 
 
 (defmethod glut:display-window :after ((window window))
-  (glut:position-window 100 500))
+  (glut:position-window 100 300))
 
 
 ;; Display
@@ -58,7 +58,7 @@
   ;;(gl:flush)
   )
 
-#|
+
 (defmethod glut:display ((window window))
   ;;(gl:clear-color 0 0 1 1)
   (gl:clear :color-buffer)               ; clear buffer
@@ -85,12 +85,12 @@
 
   (gl:disable :line-stipple)
 
+  (gl:flush)
   (glut:swap-buffers)
   
-  ;;(gl:flush)
+  ;;
   ;; (glut:post-redisplay)
   )  ; show window
-|#
 
 (defmethod glut:reshape ((w window) width height)
   (gl:viewport 0 0 width height)
