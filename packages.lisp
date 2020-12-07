@@ -47,7 +47,8 @@
 (defpackage #:paths/view
   (:use #:cl)
   (:local-nicknames (#:gl #:cl-opengl)
-                    (#:glut #:cl-glut))
+                    (#:glut #:cl-glut)
+                    (#:paths #:paths))
   (:export #:view
            #:multi-view))
 
