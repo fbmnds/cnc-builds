@@ -11,7 +11,7 @@
    #:quicklisp
    #:cl-opengl
    #:cl-glut
-   ;;#:cl-glu
+   #:cl-glu
    ;;#:cl-glfw3
    )
   :serial t
