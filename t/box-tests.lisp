@@ -23,6 +23,8 @@
 
 (defparameter e-box (emitt-box tbox))
 
+(defparameter rhomb '((0 . 10) (10 . 0) (20 . 10) (10 . 20)))
+
 (defun run-tests ()
   (assert (equal (flip-x l1) '((1 . -1) (11 . -1) (11 . -5) (1 . -5))))
   (assert (equal (flip-y l1) '((-1 . 1) (-11 . 1) (-11 . 5) (-1 . 5))))
@@ -89,7 +91,11 @@
            (mapcar #'(lambda (p) (cons :red p))
                    (mapcar #'(lambda (l) (shift-path-- 1.5 l)) tbox))
            (mapcar #'(lambda (p) (cons :green p))
-                   (mapcar #'(lambda (l) (shift-path-+ 1.5 l)) tbox)))))
+                   (mapcar #'(lambda (l) (shift-path-+ 1.5 l)) tbox))))
+  (paths/view:colored-multi-view
+   (list (cons :white rhomb)
+         (cons :red (shift-path-- 1.5 rhomb))
+         (cons :green (shift-path-+ 1.5 rhomb)))))
 
 
 
