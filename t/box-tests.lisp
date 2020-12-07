@@ -83,7 +83,13 @@
                    tbox)
            (mapcar #'(lambda (l)
                        (remove-if #'null (shift-path-+ 1.5 l)))
-                   tbox))))
+                   tbox)))
+  (paths/view:colored-multi-view
+   (append (mapcar #'(lambda (p) (cons :white p)) tbox)
+           (mapcar #'(lambda (p) (cons :red p))
+                   (mapcar #'(lambda (l) (shift-path-- 1.5 l)) tbox))
+           (mapcar #'(lambda (p) (cons :green p))
+                   (mapcar #'(lambda (l) (shift-path-+ 1.5 l)) tbox)))))
 
 
 

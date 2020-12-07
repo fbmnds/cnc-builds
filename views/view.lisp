@@ -7,8 +7,8 @@
 (defparameter *aspect-ratio* 1.0)
 (defparameter *path* nil)
 (defparameter *paths* nil)
+(defparameter *colored-paths* nil)
 (defparameter *stats* nil)
-
 
 (defclass window (glut:window) 
   ()
@@ -32,21 +32,41 @@
              (- (/ (* *mm-to-px* 2 (cdr c)) *height*) 0.9)))
 
 
+(defun set-color (color)
+  (cond ((eq color :black) (gl:color 0 0 0 1))
+        ((eq color :red) (gl:color 1 0 0 1))
+        ((eq color :green) (gl:color 0 1 0 1))
+        ((eq color :yellow) (gl:color 1 1 0 1))
+        ((eq color :blue) (gl:color 0 0 1 1))
+        ((eq color :magenta) (gl:color 1 0 1 1))
+        ((eq color :cyan) (gl:color 0 1 1 1))
+        ((eq color :white) (gl:color 1 1 1 1))
+        (t (apply #'gl:color color))))
+
 (defun display-window (&optional window)
   (gl:clear :color-buffer-bit)
-  (gl:color 1 1 1 1)
 
-  (if *path*
-      (progn
-        (gl:begin :line-loop)
-        (mapc #'c-vertex-2d *path*)
-        (gl:end))
-      (mapc #'(lambda (path)
-                (progn
-                  (gl:begin :line-loop)
-                  (mapc #'c-vertex-2d path)
-                  (gl:end)))
-            *paths*))
+  (cond ((car *path*)
+         (gl:begin :line-loop)
+         (gl:color 1 1 1 1)
+         (mapc #'c-vertex-2d *path*)
+         (gl:end))
+        ((car *paths*)
+         (mapc #'(lambda (path)
+                   (progn
+                     (gl:begin :line-loop)
+                     (gl:color 1 1 1 1)
+                     (mapc #'c-vertex-2d path)
+                     (gl:end)))
+               *paths*))
+        ((car *colored-paths*)
+         (mapc #'(lambda (cpath)
+                   (gl:begin :line-loop)
+                   (set-color (car cpath))
+                   (mapc #'c-vertex-2d (cdr cpath))
+                   (gl:end))
+               *colored-paths*))
+        (t nil))
 
   (gl:flush)
   (glut:swap-buffers))
@@ -55,10 +75,16 @@
   (display-window w))
 
 (defmethod glut:reshape ((w window) width height)
-  (declare (ignore width))
-  (setf *width* (* height *aspect-ratio*))
-  (setf *height* height)
-  (display-window w))
+  (let ((ar (/ width (1+ height))))
+    (cond ((> ar *aspect-ratio*)
+           (setf *width* (* height ar))
+           (setf *height* height)
+           (display-window w))
+          ((> ar *aspect-ratio*)
+           (setf *width* width)
+           (setf *height* (/ *width* ar))
+           (display-window w))
+          (t nil))))
 
 (defmethod glut:keyboard ((w window) key x y)
   (declare (ignore x y))
@@ -82,6 +108,8 @@
 (defun view (path &optional width height)
   (declare (ignore width height))
   (setf *path* path)
+  (setf *paths* nil)
+  (setf *colored-paths* nil)
   (setf *stats* (paths:stats path))
   (run-view))
 
@@ -89,6 +117,16 @@
   (declare (ignore width height))
   (setf *path* nil)
   (setf *paths* paths)
+  (setf *colored-paths* nil)
   (setf *stats* (paths:stats-acc paths))
+  (run-view))
+
+(defun colored-multi-view (colored-paths &optional width height)
+  (declare (ignore width height))
+  (setf *path* nil)
+  (setf *paths* nil)
+  (setf *colored-paths* colored-paths)
+  (setf *stats* (paths:stats-acc
+                 (mapcar #'(lambda (cp) (cdr cp)) colored-paths)))
   (run-view))
 

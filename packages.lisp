@@ -50,7 +50,8 @@
                     (#:glut #:cl-glut)
                     (#:paths #:paths))
   (:export #:view
-           #:multi-view))
+           #:multi-view
+           #:colored-multi-view))
 
 (defpackage #:paths/box-tests
   (:use #:cl #:paths #:paths/box #:paths/view)
