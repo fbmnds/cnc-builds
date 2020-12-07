@@ -53,5 +53,6 @@
 
 (defpackage #:paths/box-tests
   (:use #:cl #:paths #:paths/box #:paths/view)
-  (:export #:run-tests))
+  (:export #:run-tests
+           #:run-view-tests))
 
