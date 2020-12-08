@@ -95,7 +95,22 @@
   (paths/view:colored-multi-view
    (list (cons :white rhomb)
          (cons :red (shift-path-- 1.5 rhomb))
-         (cons :green (shift-path-+ 1.5 rhomb)))))
+         (cons :green (shift-path-+ 1.5 rhomb))))
+  (paths/view:colored-multi-view
+   (list (cons :white
+               (paths/box:shift-x 101
+                                  (paths/box:shift-y 101
+                                                     (paths:circle-path 100 100))))
+         (cons :red
+               (paths/box:shift-x
+                101 (paths/box:shift-y
+                     101 (paths:shift-path--
+                          2 (paths:circle-path 100 100)))))
+         (cons :green
+               (paths/box:shift-x
+                101 (paths/box:shift-y
+                     101 (paths:shift-path-+
+                          2 (paths:circle-path 100 100))))))))
 
 
 

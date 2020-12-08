@@ -42,7 +42,8 @@
            #:in-row-p
            #:stats
            #:stats-acc
-           #:trim-path))
+           #:trim-path
+           #:circle-path))
 
 (defpackage #:paths/view
   (:use #:cl)

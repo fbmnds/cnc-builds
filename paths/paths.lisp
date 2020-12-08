@@ -148,6 +148,10 @@
                           (shift-corner-- r (car c) (cadr c) (caddr c))))
                      (group 3 (trim-path l)))))
 
+(defun circle-path (r n)
+  (let ((pi2/n (/ (* 2 pi) n)))
+    (loop for i from 0 to (1- n) collect (cons (* r (cos (* i pi2/n)))
+                                               (* r (sin (* i pi2/n)))))))
 
 #|
 (defparameter box (car fingerjoints/tests::e-box))                    ;
