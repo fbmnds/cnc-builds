@@ -105,12 +105,12 @@
                (paths/box:shift-x
                 101 (paths/box:shift-y
                      101 (paths:shift-path--
-                          2 (paths:circle-path 100 100)))))
+                          2 (paths:circle-path 100 25)))))
          (cons :green
                (paths/box:shift-x
                 101 (paths/box:shift-y
                      101 (paths:shift-path-+
-                          2 (paths:circle-path 100 100))))))))
+                          2 (paths:circle-path 100 25))))))))
 
 
 

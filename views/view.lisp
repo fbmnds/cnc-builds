@@ -27,10 +27,22 @@
 
 
 ;; Display
-(defun c-vertex-2d (c)
+(defun c-vertex-2d- (c)
   (gl:vertex (- (/ (* *mm-to-px* 2 (car c)) *width*) 0.9)
              (- (/ (* *mm-to-px* 2 (cdr c)) *height*) 0.9)))
 
+(defun c-vertex-2d (c)
+  (ignore-errors
+   (cond ((> *aspect-ratio* 1)
+          (gl:vertex (- (/ (* *mm-to-px* 2 (car c)) *width*) 0.9)
+                     (- (/ (* *mm-to-px* 2 (cdr c))
+                           (/ *width* *aspect-ratio*))
+                        0.9)))
+         (t
+          (gl:vertex (- (/ (* *mm-to-px* 2 (car c))
+                           (* *height* *aspect-ratio*))
+                        0.9)
+                     (- (/ (* *mm-to-px* 2 (cdr c)) *height*) 0.9))))))
 
 (defun set-color (color)
   (cond ((eq color :black) (gl:color 0 0 0 1))
@@ -44,6 +56,7 @@
         (t (apply #'gl:color color))))
 
 (defun display-window (&optional window)
+  (declare (ignore window))
   (gl:clear :color-buffer-bit)
 
   (cond ((car *path*)
@@ -86,22 +99,30 @@
            (display-window w))
           (t nil))))
 
+(defmacro reset-scale ()
+  `(progn
+     (setf *height* (floor (* 1.1 *mm-to-px*
+                              (- (getf *stats* :max-y)
+                                 (getf *stats* :min-y)))))
+     (setf *width* (floor (* 1.1 *mm-to-px*
+                             (- (getf *stats* :max-x)
+                                (getf *stats* :min-x)))))
+     (setf *aspect-ratio* (/ *width* *height*))))
+
 (defmethod glut:keyboard ((w window) key x y)
   (declare (ignore x y))
-  (when (eql key #\m) (glut:post-redisplay))
-  (when (or (eql key #\Esc) (eql key #\Space))
-    (glut:destroy-current-window)))
+  (cond ((eql key #\0)
+         (reset-scale)
+         (glut:reshape-window *width* *height*)
+         (glut:post-redisplay))
+        ((or (eql key #\Esc) (eql key #\Space))
+         (glut:destroy-current-window))
+        (t nil)))
 
 ;;(setf glut:*run-main-loop-after-display* nil)
 
 (defun run-view ()
-  (setf *height* (floor (* (1+ *mm-to-px*)
-                           (- (nth (1+ (position :max-y *stats*)) *stats*)
-                              (nth (1+ (position :min-y *stats*)) *stats*)))))
-  (setf *width* (floor (* (1+ *mm-to-px*)
-                          (- (nth (1+ (position :max-x *stats*)) *stats*)
-                             (nth (1+ (position :min-x *stats*)) *stats*)))))
-  (setf *aspect-ratio* (/ *width* *height*))
+  (reset-scale)
   (glut:display-window (make-instance 'window)))
 
 ;; Main
