@@ -130,22 +130,28 @@
           (if (zerop pos) l (append (subseq l pos) (subseq l 0 pos))))
         l)))
 
-(defun box (lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z)
+(defun box (lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d)
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-1 (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy))
-        (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy)))
+        (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy))
+        (spacer-x (+ lx spacer-d))
+        (spacer-y (+ ly spacer-d))
+        (spacer-z (+ lz spacer-d)))
     (list
      inner-box
      (shift-x spacer-x inner-box)
      (shift-y spacer-y outer-box-2)
-     (shift-x spacer-x (shift-y spacer-z outer-box-2))
+     (shift-x spacer-x (shift-y spacer-y outer-box-2))
      (shift-x (* 2 spacer-x) outer-box-1)
-     (shift-x (+ (* 2 spacer-x) spacer-z) outer-box-1))))
+     (shift-x (* 2 spacer-x) (shift-y spacer-z outer-box-1)))))
 
-(defun box-cut-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z)
+(defun box-cut-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d)
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-1 (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy))
-        (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy)))
+        (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy))
+        (spacer-x (+ lx spacer-d))
+        (spacer-y (+ ly spacer-d))
+        (spacer-z (+ lz spacer-d)))
     (list
      inner-box
      (shift-x spacer-x inner-box)

@@ -14,12 +14,10 @@
 (defparameter lx (+ 50 (* 2 dy)))
 (defparameter ly (+ 20 (* 2 dy)))
 (defparameter lz ly)
-(defparameter spacer-x (+ lx 4))
-(defparameter spacer-y (+ ly 4))
-(defparameter spacer-z (+ lz 4))
+(defparameter spacer-d 4)
 
 (defparameter tbox
-  (box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-x spacer-y spacer-z))
+  (box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d))
 
 (defparameter e-box (emitt-box tbox))
 
@@ -55,7 +53,7 @@
   (assert (equal (stats (car tbox))
                  '(:LEN 58 :MAX-X 55.0 :MIN-X 0 :MAX-Y 25.0 :MIN-Y 0)))
   (assert (equal (stats-acc tbox)
-                 (:LEN 308 :MAX-X 172.0 :MIN-X 0 :MAX-Y 54.0 :MIN-Y 0)))
+                 '(:LEN 308 :MAX-X 143.0 :MIN-X 0 :MAX-Y 54.0 :MIN-Y 0)))
   
   (let ((x '(1 2 3 4 5)))
     (assert (equal (group 3 x)
@@ -98,9 +96,11 @@
          (cons :green (shift-path-+ 1.5 rhomb))))
   (paths/view:colored-multi-view
    (list (cons :white
-               (paths/box:shift-x 101
-                                  (paths/box:shift-y 101
-                                                     (paths:circle-path 100 100))))
+               (paths/box:shift-x
+                101
+                (paths/box:shift-y
+                 101
+                 (paths:circle-path 100 100))))
          (cons :red
                (paths/box:shift-x
                 101 (paths/box:shift-y
