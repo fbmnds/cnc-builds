@@ -19,12 +19,10 @@
           l))
 
 (defun cut-bd (h l &optional (eps 0.001))
-  (let ((l_ (remove-if-not #'(lambda (c) (< (car c) (- h eps))) l)))
-    (append (list (cons h (cdar l_))) l_ (list (cons h (cdar (last l_)))))))
+  (remove-if-not #'(lambda (c) (< (car c) (- h eps))) l))
 
 (defun cut-ac (h l &optional (eps 0.001))
-  (let ((l_ (remove-if-not #'(lambda (c) (< (cdr c) (- h eps))) l)))
-    (append (list (cons (caar l_) h)) l_ (list (cons (caar (last l_)) h)))))
+  (remove-if-not #'(lambda (c) (< (cdr c) (- h eps))) l))
 
 (defun points-1 (n d1 d2 dy)
   (apply #'append
@@ -147,18 +145,21 @@
 
 (defun box-cut-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d)
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
-        (outer-box-1 (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy))
-        (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy))
+        (outer-box-1
+          (cut-ac h (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy)))
+        (outer-box-2
+          (cut-ac h (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy)))
         (spacer-x (+ lx spacer-d))
         (spacer-y (+ ly spacer-d))
         (spacer-z (+ lz spacer-d)))
     (list
      inner-box
      (shift-x spacer-x inner-box)
-     (shift-y spacer-z (cut-ac h outer-box-2))
-     (shift-x spacer-x (shift-y spacer-z (cut-ac h outer-box-2)))
-     (shift-x (* 2 spacer-x) (cut-bd h outer-box-1))
-     (shift-x (+ (* 2 spacer-x) spacer-y) (cut-bd h outer-box-1)))))
+     (shift-y spacer-y outer-box-2)
+     (shift-x spacer-x (shift-y spacer-y outer-box-2))
+     (shift-x (* 2 spacer-x) (flip-45 outer-box-1))
+     (shift-x (+ (* 2 spacer-x) (* (/ h lz) spacer-z))
+              (flip-45 outer-box-1)))))
 
 (defun emitt-cons (c &optional (v 3))
   (if (endp c)
@@ -181,3 +182,4 @@
                   (emitt l2 v)))
           b :initial-value nil))
 
+ 

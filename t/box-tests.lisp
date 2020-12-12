@@ -11,13 +11,17 @@
 (defparameter dy  2.5)
 (defparameter eps 0.01)
 
-(defparameter lx (+ 50 (* 2 dy)))
-(defparameter ly (+ 20 (* 2 dy)))
-(defparameter lz ly)
+(defparameter lx (+ 60 (* 2 dy)))
+(defparameter ly (+ 40 (* 2 dy)))
+(defparameter lz (+ 20 (* 2 dy)))
+(defparameter h (* 0.8 lz))
 (defparameter spacer-d 4)
 
 (defparameter tbox
   (box lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d))
+
+(defparameter tbox-cut-z
+  (box-cut-z h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d))
 
 (defparameter e-box (emitt-box tbox))
 
@@ -90,6 +94,15 @@
                    (mapcar #'(lambda (l) (shift-path-- 1.5 l)) tbox))
            (mapcar #'(lambda (p) (cons :green p))
                    (mapcar #'(lambda (l) (shift-path-+ 1.5 l)) tbox))))
+  (paths/view:colored-multi-view
+   (append (mapcar #'(lambda (p) (cons :white p))
+                   tbox-cut-z)
+           (mapcar #'(lambda (p) (cons :red p))
+                   (mapcar #'(lambda (l) (shift-path-- 1.5 l))
+                           tbox-cut-z))
+           (mapcar #'(lambda (p) (cons :green p))
+                   (mapcar #'(lambda (l) (shift-path-+ 1.5 l))
+                           tbox-cut-z))))
   (paths/view:colored-multi-view
    (list (cons :white rhomb)
          (cons :red (shift-path-- 1.5 rhomb))
