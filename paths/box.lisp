@@ -142,8 +142,8 @@
      (shift-x spacer-x inner-box)
      (shift-y spacer-y outer-box-2)
      (shift-x spacer-x (shift-y spacer-y outer-box-2))
-     (shift-x (* 2 spacer-x) outer-box-1)
-     (shift-x (* 2 spacer-x) (shift-y spacer-z outer-box-1)))))
+     (shift-x (* 2 spacer-x) (flip-45 outer-box-1))
+     (shift-x (+ (* 2 spacer-x) spacer-z) (flip-45 outer-box-1)))))
 
 (defun box-cut-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d)
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
