@@ -73,6 +73,33 @@
 ;; M^-1 = 1/det2 * d -b
 ;;                 -c a
 
+(defun linear-solution (m1 m2 b)
+  (ignore-errors
+   (let ((det (det2 m1 m2)))
+     (cons (/ (+ (* (cdr m2) (car b)) (* (cdr m1) (cdr b))) det)
+           (/ (- (* (car m1) (cdr b)) (* (car m2) (car b))) det)))))
+
+(defun radius-center-in-corner (c1 c2 c3 c4)
+  (ignore-errors
+   (c+ c2 (c*
+           (car (c+ c2
+                    (c* (car (linear-solution (normale-+ c1 c2)
+                                              (normale-+ c3 c4)
+                                              (c- c3 c2)))
+                        (normale-+ c1 c2))))
+           (normale-+ c1 c2)))))
+
+#|
+(paths:radius-center-in-corner '(0 . 0) '(0 . 1) '(0.5 . 1.5) '(1.5 . 1.5))
+=> '(0.5 . 1)
+(paths:radius-center-in-corner '(0.5 . 1.5) '(1.5 . 1.5) '(2 . 1) '(2 . 0))
+!=> '(1.5 . 1)
+(paths:radius-center-in-corner '(2 . 1) '(2 . 0) '(1.5 . -0.5) '(1 . -0.5))
+!=> '(1.5 . 0)
+(paths:radius-center-in-corner '(1.5 . -0.5) '(0.5 . -0.5) '(0 . 0) '(0 . 1))
+=> (0.5 . 0)
+|#
+
 (defun shift-corner-+ (r c1 c2 c3)
   (let* ((n1 (normale-+ c2 c1))
          (n2 (normale-+ c3 c2))

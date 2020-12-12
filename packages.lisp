@@ -43,7 +43,9 @@
            #:stats
            #:stats-acc
            #:trim-path
-           #:circle-path))
+           #:circle-path
+           #:linear-solution
+           #:radius-center-in-corner))
 
 (defpackage #:paths/view
   (:use #:cl)

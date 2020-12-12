@@ -55,9 +55,9 @@
   (assert (not (in-row-p '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 0.0)))))
 
   (assert (equal (stats (car tbox))
-                 '(:LEN 58 :MAX-X 55.0 :MIN-X 0 :MAX-Y 25.0 :MIN-Y 0)))
+                 '(:LEN 90 :MAX-X 65.0 :MIN-X 0 :MAX-Y 45.0 :MIN-Y 0)))
   (assert (equal (stats-acc tbox)
-                 '(:LEN 308 :MAX-X 143.0 :MIN-X 0 :MAX-Y 54.0 :MIN-Y 0)))
+                 '(:LEN 436 :MAX-X 192.0 :MIN-X 0 :MAX-Y 74.0 :MIN-Y 0)))
   
   (let ((x '(1 2 3 4 5)))
     (assert (equal (group 3 x)
