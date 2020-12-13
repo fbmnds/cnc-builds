@@ -1,6 +1,5 @@
 $fn=24;
 
-
 module rsquare (lx,ly,b) {
     union () {
         difference () {
@@ -49,7 +48,7 @@ b2=5;
 dc=8;
 bc=2;
 
-module outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,bc) {
+module outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,b2,bc,dc) {
     difference () {
         rsquare(lx+2*keyb_dx,ly+2*keyb_dy,b2);
         inner_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy);
@@ -60,7 +59,42 @@ module outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,bc) {
     }
 }
 
-union () {
-    outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,bc) ;
-    translate ([d_keyb,d_keyb,0]) { inner_keyb2 (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb); }
+module body (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb,b2,bc,dc) {
+    union () {
+        outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,b2,bc,dc) ;
+        translate ([d_keyb,d_keyb,0]) { inner_keyb2 (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb); }
+    }
 }
+
+//body (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb,b2,bc,dc) ;
+
+dy_screen=17;
+
+module inner_screen (lx,ly,b,dx,dy,keyb_dx,keyb_dy,dy_screen) {
+    translate([keyb_dx,keyb_dy,0]) {
+        difference () {
+            rsquare(lx,ly,b);
+            square([lx,dy]); 
+        }
+    }
+}
+
+
+
+module screen (lx,ly,b,dx,dy,keyb_dx,keyb_dy,b2,bc,dc,dy_screen) {
+    difference () { 
+        rsquare(lx+2*keyb_dx,ly+2*keyb_dy,b2);
+        inner_screen (lx,ly,b,dx,dy,keyb_dx,keyb_dy,dy_screen) ;
+        translate ([dc,dc,0]) { circle (bc); }
+        translate ([dc,ly+2*keyb_dy-dc,0]) { circle (bc); }
+        translate ([lx+2*keyb_dx-dc,dc,0]) { circle (bc); }
+        translate ([lx+2*keyb_dx-dc,ly+2*keyb_dy-dc,0]) { circle (bc); }
+    }
+}
+
+screen (lx,ly,b,dx,dy,keyb_dx,keyb_dy,b2,bc,dc,dy_screen);
+
+
+
+
+
