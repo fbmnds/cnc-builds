@@ -15,12 +15,12 @@ module rsquare (lx,ly,b) {
         translate ([lx-b,ly-b,0]) { circle (b); }
         }
 }
-b=13;
-lx=380;
-ly=253;
+b=12;
+lx=376;
+ly=250;
 
-dx=25;
-dy=19;
+dx=24.5;
+dy=18.6;
 keyb_dx=10;
 keyb_dy=7;
 
@@ -33,16 +33,27 @@ module inner_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy) {
     }
 }
 
+//inner_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy) ;
+
 d_keyb=2;
 
 module inner_keyb2 (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb) {
-    translate([keyb_dx,keyb_dy,0]) {
+    translate([keyb_dx+d_keyb,keyb_dy+d_keyb,0]) {
         difference () {
             rsquare(lx-2*d_keyb,ly-2*d_keyb,b-2*d_keyb);
-            translate([dx-2*d_keyb,ly-dy-2*d_keyb,0]) { square([lx-2*dx+2*d_keyb,dy+d_keyb]); }
+            translate([dx-2*d_keyb,ly-dy-2*d_keyb,0]) { 
+                square([lx-2*dx+2*d_keyb,dy+d_keyb]); 
+            }
         }
     }
 }
+
+/*
+difference () {
+    inner_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy) ;
+    inner_keyb2 (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb);
+};
+*/
 
 b2=5;
 dc=8;
@@ -62,7 +73,7 @@ module outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,b2,bc,dc) {
 module body (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb,b2,bc,dc) {
     union () {
         outer_keyb (lx,ly,b,dx,dy,keyb_dx,keyb_dy,b2,bc,dc) ;
-        //translate ([d_keyb,d_keyb,0]) { inner_keyb2 (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb); }
+        inner_keyb2 (lx,ly,b,dx,dy,keyb_dx,keyb_dy,d_keyb);
     }
 }
 
