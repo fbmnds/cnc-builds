@@ -1,10 +1,9 @@
 
 (in-package #:paths)
 
-;; On Lisp, pp. 47, 219, 410
+;; On Lisp, pp. 47, 219, 410(?)
 
-(defun group (n l)
-  (when (zerop n) (error "cannot group with 0"))
+(defun group-3 (l)
   (let ((c0 (car l))
         (c1 (cadr l)))
     (labels ((rec (l acc)
@@ -166,14 +165,14 @@
              (mapcar #'(lambda (c)
                          (ignore-errors
                           (shift-corner-+ r (car c) (cadr c) (caddr c))))
-                     (group 3 (trim-path l)))))
+                     (group-3 (trim-path l)))))
 
 (defun shift-path-- (r l)
   (remove-if #'null
              (mapcar #'(lambda (c)
                          (ignore-errors
                           (shift-corner-- r (car c) (cadr c) (caddr c))))
-                     (group 3 (trim-path l)))))
+                     (group-3 (trim-path l)))))
 
 (defun circle-path (r n)
   (let ((pi2/n (/ (* 2 pi) n)))

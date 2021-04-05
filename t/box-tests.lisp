@@ -60,10 +60,10 @@
                  '(:LEN 436 :MAX-X 192.0 :MIN-X 0 :MAX-Y 74.0 :MIN-Y 0)))
   
   (let ((x '(1 2 3 4 5)))
-    (assert (equal (group 3 x)
+    (assert (equal (group-3 x)
                    '((1 2 3) (2 3 4) (3 4 5) (4 5 1) (5 1 2))))
     (setf x '(1 2 3 4 5 6))
-    (assert (equal (group 3 x)
+    (assert (equal (group-3 x)
                    '((1 2 3) (2 3 4) (3 4 5) (4 5 6) (5 6 1) (6 1 2))))
     (setf x '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 0)))
     (assert (equal (shift-corner-+ 1.5 (car x) (cadr x) (caddr x))

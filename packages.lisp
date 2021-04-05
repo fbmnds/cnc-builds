@@ -1,4 +1,10 @@
 
+(defpackage #:paths/emitt
+  (:use #:cl)
+  (:export #:group
+           #:emitt-scad
+           #:emitt-scad-box))
+
 (defpackage #:paths/box
   (:use #:cl)
   (:export #:round_d-3
@@ -18,13 +24,11 @@
            #:box-var-outer-1
            #:box-var-outer-2
            #:box
-           #:box-cut-z
-           #:emitt-scad
-           #:emitt-scad-box))
+           #:box-cut-z))
 
 (defpackage #:paths
   (:use #:cl)
-  (:export #:group
+  (:export #:group-3
            #:with-type
            #:c-
            #:c+
@@ -57,7 +61,7 @@
            #:colored-multi-view))
 
 (defpackage #:paths/box-tests
-  (:use #:cl #:paths #:paths/box #:paths/view)
+  (:use #:cl #:paths #:paths/box #:paths/emitt #:paths/view)
   (:export #:run-tests
            #:run-view-tests))
 

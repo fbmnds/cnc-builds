@@ -19,7 +19,8 @@
   ((:file "packages")
    (:module "paths"
     :components
-    ((:file "box")
+    ((:file "emitt")
+     (:file "box")
      (:file "paths")))
    (:module "views"
     :components
