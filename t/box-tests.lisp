@@ -23,7 +23,7 @@
 (defparameter tbox-cut-z
   (box-cut-z h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d))
 
-(defparameter e-box (emitt-box tbox))
+(defparameter e-box (emitt-scad-box tbox))
 
 (defparameter rhomb '((0 . 10) (10 . 0) (20 . 10) (10 . 20)))
 

@@ -161,13 +161,13 @@
      (shift-x (+ (* 2 spacer-x) (* (/ h lz) spacer-z))
               (flip-45 outer-box-1)))))
 
-(defun emitt-cons (c &optional (v 3))
+(defun emitt-scad-cons (c &optional (v 3))
   (if (endp c)
       ""
       (format nil "[~v$,~a]" v (car c) (format nil "~v$" v (cdr c)))))
 
-(defun emitt (l &optional (v 3))
-  (let ((l (mapcar #'(lambda (c) (emitt-cons c v)) l)))
+(defun emitt-scad (l &optional (v 3))
+  (let ((l (mapcar #'(lambda (c) (emitt-scad-cons c v)) l)))
     (format nil "polygon([~a]);"
             (reduce #'(lambda (c1 c2)
                         (if c1
@@ -175,11 +175,11 @@
                             c2))
                     l :initial-value nil))))
 
-(defun emitt-box (b &optional (v 3))
+(defun emitt-scad-box (b &optional (v 3))
   (reduce #'(lambda (l1 l2)
               (if l1
-                  (format nil "~a~%~a" l1 (emitt l2 v))
-                  (emitt l2 v)))
+                  (format nil "~a~%~a" l1 (emitt-scad l2 v))
+                  (emitt-scad l2 v)))
           b :initial-value nil))
 
  

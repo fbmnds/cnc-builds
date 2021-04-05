@@ -19,8 +19,8 @@
            #:box-var-outer-2
            #:box
            #:box-cut-z
-           #:emitt
-           #:emitt-box))
+           #:emitt-scad
+           #:emitt-scad-box))
 
 (defpackage #:paths
   (:use #:cl)
