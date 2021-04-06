@@ -51,7 +51,10 @@
            #:trim-path
            #:circle-path
            #:linear-solution
-           #:radius-center-in-corner))
+           #:radius-center-in-corner
+           #:min-xy-path
+           #:flip-path
+           #:shift-path-origin))
 
 (defpackage #:paths/view
   (:use #:cl)

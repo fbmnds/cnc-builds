@@ -179,6 +179,19 @@
     (loop for i from 0 to (1- n) collect (cons (* r (cos (* i pi2/n)))
                                                (* r (sin (* i pi2/n)))))))
 
+(defun min-xy-path (path)
+  (reduce
+   #'(lambda (c d) (cons (min (car c) (car d)) (min (cdr c) (cdr d))))
+   (cdr path) :initial-value (cons (caar path) (cdar path))))
+
+(defun flip-path (path) (mapcar #'(lambda (c) (cons (cdr c) (car c))) path))
+
+(defun shift-path-origin (path &optional (offset (cons 0. 0.)))
+  (let ((delta (min-xy-path)))
+    (mapcar #'(lambda (c) (cons (+ offset (- (car c) (car delta)))
+                                (+ offset (- (cdr c) (cdr delta)))))
+            path)))
+
 #|
 (defparameter box (car fingerjoints/tests::e-box))                    ;
 
