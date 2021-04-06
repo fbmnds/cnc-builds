@@ -3,7 +3,9 @@
   (:use #:cl)
   (:export #:group
            #:emitt-scad
-           #:emitt-scad-box))
+           #:emitt-scad-box
+           #:emitt-gcode-path
+           #:emitt-gcode))
 
 (defpackage #:paths/box
   (:use #:cl)

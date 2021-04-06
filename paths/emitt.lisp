@@ -31,18 +31,26 @@
                   (emitt-scad l2 v)))
           b :initial-value nil))
 
-(defun emitt-gcode (path &optional (v 3) (eps 0.001))
+(defun emitt-gcode-path (path &optional (v 3) (eps 0.001))
   (remove-if #'null
              (mapcar #'(lambda (l)
                          (let ((c-dx (- (caadr l) (caar l)))
                                (c-dy (- (cdadr l) (cdar l))))
                            (cond ((and (< eps (abs c-dx)) (< eps (abs c-dy)))
-                                  (format nil "G0 X~v$Y~v$" v c-dx v c-dy))
+                                  (format nil "G01 X~v$Y~v$" v c-dx v c-dy))
                                  ((< eps (abs c-dx))
-                                  (format nil "G0 X~v$" v c-dx))
+                                  (format nil "G01 X~v$" v c-dx))
                                  ((< eps (abs c-dy))
-                                  (format nil "G0 Y~v$" v c-dy))
+                                  (format nil "G01 Y~v$" v c-dy))
                                  (t nil))))
                      (group-2 path))))
+
+(defun emitt-gcode (path f dz nz &optional (fz f) (v 3) (eps 0.001))
+  (let* ((gc-path (emitt-gcode-path path v eps))
+         (gc-z (format nil "G01 Z~v$ F~v$" v dz v fz))
+         (gc-f (format nil "~a F~v$" (car gc-path) v f))
+         (gcode nil))
+    (dotimes (i nz) (push (append (list gc-z gc-f) (cdr gc-path)) gcode))
+    (apply #'append gcode)))
 
  
