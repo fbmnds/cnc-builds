@@ -7,7 +7,7 @@
     (labels ((rec (l acc)
                (cond ((and (car l) (cadr l))
                       (rec (cdr l)
-                           (cons (cons (car l) (cadr l)) acc)))
+                           (push (cons (car l) (cadr l)) acc)))
                      (t (nreverse (cons (cons (cdar acc) head) acc))))))
       (when l (rec l nil)))))
 
@@ -45,6 +45,23 @@
                                   (format nil "G01 Y~v$" v c-dy))
                                  (t nil))))
                      (group-2 path))))
+
+(defun insert-tag (c1-c2 w/2 &optional (n-tags 1))
+  (let* ((c1 (car c1-c2))
+         (c2 (cdr c1-c2))
+         (mid (c* 0.5 (c- c2 c1)))
+         (mid-w/2 (c* w/2 (c-normed (c- mid c1))))
+         (w- (c- mid mid-w/2))
+         (w+ (c+ mid mid-w/2)))
+    (list mid mid-w/2 w- w+)))
+
+#|
+PATHS/EMITT> (insert-tag (cons (cons 0 0) (cons 2 3)) 0.4)
+((1.0 . 1.5) (0.22188008 . 0.33282015) (0.7781199 . 1.1671798)
+ (1.2218801 . 1.8328202))
+PATHS/EMITT> (euklid (c- '(1.2218801 . 1.8328202) '(0.7781199 . 1.1671798)))
+0.80000013 (80.000015%)
+|#
 
 (defun emitt-gcode (path f dz nz &optional (fz f) (v 3) (eps 0.001))
   (let* ((gc-path (emitt-gcode-path path v eps))

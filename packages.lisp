@@ -1,33 +1,4 @@
 
-(defpackage #:paths/emitt
-  (:use #:cl)
-  (:export #:group
-           #:emitt-scad
-           #:emitt-scad-box
-           #:emitt-gcode-path
-           #:emitt-gcode))
-
-(defpackage #:paths/box
-  (:use #:cl)
-  (:export #:round_d-3
-           #:eql-c
-           #:eql-l
-           #:eql_d-3
-           #:flip-x
-           #:flip-y
-           #:flip-45
-           #:shift-x
-           #:shift-y
-           #:shift-flip
-           #:shift-to-llc
-           #:cut-bd
-           #:cut-ac
-           #:box-var-inner
-           #:box-var-outer-1
-           #:box-var-outer-2
-           #:box
-           #:box-cut-z))
-
 (defpackage #:paths
   (:use #:cl)
   (:export #:group-3
@@ -55,6 +26,35 @@
            #:min-xy-path
            #:flip-path
            #:shift-path-origin))
+
+(defpackage #:paths/emitt
+  (:use #:cl #:paths)
+  (:export #:group
+           #:emitt-scad
+           #:emitt-scad-box
+           #:emitt-gcode-path
+           #:emitt-gcode))
+
+(defpackage #:paths/box
+  (:use #:cl)
+  (:export #:round_d-3
+           #:eql-c
+           #:eql-l
+           #:eql_d-3
+           #:flip-x
+           #:flip-y
+           #:flip-45
+           #:shift-x
+           #:shift-y
+           #:shift-flip
+           #:shift-to-llc
+           #:cut-bd
+           #:cut-ac
+           #:box-var-inner
+           #:box-var-outer-1
+           #:box-var-outer-2
+           #:box
+           #:box-cut-z))
 
 (defpackage #:paths/view
   (:use #:cl)
