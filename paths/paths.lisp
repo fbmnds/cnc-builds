@@ -187,7 +187,7 @@
 (defun flip-path (path) (mapcar #'(lambda (c) (cons (cdr c) (car c))) path))
 
 (defun shift-path-origin (path &optional (offset (cons 0. 0.)))
-  (let ((delta (min-xy-path)))
+  (let ((delta (min-xy-path path)))
     (mapcar #'(lambda (c) (cons (+ offset (- (car c) (car delta)))
                                 (+ offset (- (cdr c) (cdr delta)))))
             path)))

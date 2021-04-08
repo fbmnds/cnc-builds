@@ -3,12 +3,13 @@
 
 
 (defun group-2 (l)
-  (labels ((rec (l acc)
-             (cond ((and (car l) (cadr l))
-                    (rec (cdr l)
-                         (cons (list (car l) (cadr l)) acc)))
-                   (t (nreverse acc)))))
-    (when l (rec l nil))))
+  (let ((head (car l)))
+    (labels ((rec (l acc)
+               (cond ((and (car l) (cadr l))
+                      (rec (cdr l)
+                           (cons (cons (car l) (cadr l)) acc)))
+                     (t (nreverse (cons (cons (cdar acc) head) acc))))))
+      (when l (rec l nil)))))
 
 (defun emitt-scad-cons (c &optional (v 3))
   (if (endp c)
@@ -34,8 +35,8 @@
 (defun emitt-gcode-path (path &optional (v 3) (eps 0.001))
   (remove-if #'null
              (mapcar #'(lambda (l)
-                         (let ((c-dx (- (caadr l) (caar l)))
-                               (c-dy (- (cdadr l) (cdar l))))
+                         (let ((c-dx (- (cadr l) (caar l)))
+                               (c-dy (- (cddr l) (cdar l))))
                            (cond ((and (< eps (abs c-dx)) (< eps (abs c-dy)))
                                   (format nil "G01 X~v$Y~v$" v c-dx v c-dy))
                                  ((< eps (abs c-dx))
