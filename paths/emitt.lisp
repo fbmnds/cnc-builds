@@ -49,7 +49,7 @@
 (defun insert-tag (c1-c2 w/2)
   (let* ((c1 (car c1-c2))
          (c2 (cdr c1-c2))
-         (mid (c* 0.5 (c- c2 c1)))
+         (mid (c+ c1 (c* 0.5 (c- c2 c1))))
          (mid-w/2 (c* w/2 (c-normed (c- mid c1))))
          (w- (c- mid mid-w/2))
          (w+ (c+ mid mid-w/2)))
