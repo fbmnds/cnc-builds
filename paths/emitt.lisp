@@ -46,14 +46,31 @@
                                  (t nil))))
                      (group-2 path))))
 
-(defun insert-tag (c1-c2 w/2 &optional (n-tags 1))
+(defun insert-tag (c1-c2 w/2)
   (let* ((c1 (car c1-c2))
          (c2 (cdr c1-c2))
          (mid (c* 0.5 (c- c2 c1)))
          (mid-w/2 (c* w/2 (c-normed (c- mid c1))))
          (w- (c- mid mid-w/2))
          (w+ (c+ mid mid-w/2)))
-    (list mid mid-w/2 w- w+)))
+    (list (cons c1 w-) (cons :tag (cons w- w+)) (cons w+ c2))))
+
+(defun divide-segment (c1-c2 n)
+  (let* ((c1 (car c1-c2))
+         (c2 (cdr c1-c2))
+         (v (c- c2 c1))
+         (ret nil))
+    (dotimes (i n) (push (c+ c1 (c* (/ i n) v)) ret))
+    (push c2 ret)
+    (nreverse ret)))
+
+(defun inner-divide-segment (c1-c2 n)
+  (let* ((c1 (car c1-c2))
+         (c2 (cdr c1-c2))
+         (v (c- c2 c1))
+         (ret nil))
+    (dotimes (i n) (unless (zerop i) (push (c+ c1 (c* (/ i n) v)) ret)))
+    (nreverse ret)))
 
 #|
 PATHS/EMITT> (insert-tag (cons (cons 0 0) (cons 2 3)) 0.4)
