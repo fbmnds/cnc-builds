@@ -3,3 +3,4 @@
 (asdf:load-system :cnc-builds)
 (in-package paths/emitt)
 (defparameter path (car paths/box-tests::tbox))
+(cons  (cons 2.5 10.5))
