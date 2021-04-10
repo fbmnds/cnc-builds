@@ -67,7 +67,20 @@
                    '((1 2 3) (2 3 4) (3 4 5) (4 5 6) (5 6 1) (6 1 2))))
     (setf x '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 0)))
     (assert (equal (shift-corner-+ 1.5 (car x) (cadr x) (caddr x))
-                   '(11.0 . 4.0)))))
+                   '(11.0 . 4.0))))
+
+  (let ((c1-c2 (cons (cons 0. 0.) (cons 20. 0.)))
+        (ret '(((0 . 0) 8.0 . 0.0)
+               (:TAG (8.0 . 0.0) 12.0 . 0.0)
+               ((12.0 . 0.0) 20 . 0))))
+    (assert (equal ret (insert-tag c1-c2 2))))
+  
+  (let ((c1-c2 (cons (cons 0. 0.) (cons 20. 10.)))
+        (ret '(((0 . 0) 8.211145 . 4.1055727)
+               (:TAG (8.211145 . 4.1055727) 11.788855 . 5.8944273)
+               ((11.788855 . 5.8944273) 20 . 10))))
+    (assert (equal ret (insert-tag c1-c2 2)))
+    (assert (= 4. (round* (euklid (c- (cadadr ret) (cddadr ret))))))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)

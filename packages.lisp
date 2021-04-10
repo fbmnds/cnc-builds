@@ -29,11 +29,16 @@
 
 (defpackage #:paths/emitt
   (:use #:cl #:paths)
-  (:export #:group
+  (:export #:*precision*
+           #:round*
+           #:c1-c2=
+           #:group
+           #:group-2
            #:emitt-scad
            #:emitt-scad-box
            #:emitt-gcode-path
-           #:emitt-gcode))
+           #:emitt-gcode
+           #:insert-tag))
 
 (defpackage #:paths/box
   (:use #:cl)
