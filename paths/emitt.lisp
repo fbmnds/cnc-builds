@@ -3,7 +3,14 @@
 
 (defparameter *precision* 0.00001)
 
-(defun round* (x) (* (round x *precision*) *precision*))
+(defun round* (x)
+  (cond ((numberp x) (* (round x *precision*) *precision*))
+        ((and (consp x) (eql :tag (car x))) (round* (cdr x)))
+        ((and (consp x) (numberp (car x)) (numberp (cdr x)))
+         (cons (round* (car x)) (round* (cdr x))))
+        ((and (consp x) (consp (car x)) (numberp (cdr x)))
+         (cons (round* (car x)) (round* (cdr x))))
+        (t (format nil "round* undefined for ~a" x))))
 
 (defun group-2 (l)
   (let ((head (car l)))
@@ -101,20 +108,16 @@
 
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)) (eps 0.001))
   "Convert a tagged path segment into relative distances ((DX . DY) . DZ)."
-  (flet ((inner-convert-dxyz (c1-c2 c-dz)
-           (let ((c-dx (- (cadr c1-c2) (caar c1-c2)))
-                 (c-dy (- (cddr c1-c2) (cdar c1-c2))))
-             (cond ((and (< eps (abs c-dx))
-                         (< eps (abs c-dy)))
-                    (list (cons (cons c-dx c-dy) c-dz)))
-                   ((< eps (abs c-dx))
-                    (list (cons (cons c-dx 0.) c-dz)))
-                   ((< eps (abs c-dy))
-                    (list (cons (cons 0. c-dy) c-dz)))
-                   (t nil)))))
-    (let* ((c-dz (if (> i (- nz nt)) (* (- i (- nz nt)) dz) 0.))
-           (c1-c2 (if (eql :tag (car c1-c2)) (cdr c1-c2) c1-c2)))
-      (inner-convert-dxyz c1-c2 c-dz))))
+  (let* ((tag-p (eql :tag (car c1-c2)))
+         (c-dz (round* (* i dz)))
+         (c1-c2 (if tag-p (cdr c1-c2) c1-c2))
+         (c-dx (round* (- (cadr c1-c2) (caar c1-c2))))
+         (c-dy (round* (- (cddr c1-c2) (cdar c1-c2)))))
+    (if (and tag-p (> i (- nz nt)))
+        (list (cons (cons 0. 0.) (* -1. c-dz))
+              (cons (cons c-dx c-dy) 0.)
+              (cons (cons 0. 0.) c-dz))
+        (list (cons (cons c-dx c-dy) c-dz)))))
 
 (defun optimize-relative-distances (path-dxyz &optional (eps 0.001))
   "Accumulate marginal and unidirectional movements."
@@ -184,7 +187,20 @@
     (dolist (i nz)
       (dolist (c1-c2 p2)
         (dolist (dxyz-c1-c2 (convert-dxyz c1-c2 i dz nz nt eps))
-          (push dxyz-c1-c2 ret))))
+          (dolist (dxyz dxyz-c1-c2)
+            (push dxyz ret)))))
+    (nreverse ret)))
+
+(defun convert-path-dxyz-2 (path tags w/2 dz nz
+                          &optional (nt (/ nz 2)) (eps 0.001))
+  "Convert a PATH with TAGS into optimized relative distances ((DX . DY) . DZ)."
+  (let ((p2 (insert-tags path tags w/2))
+        (ret nil))
+    (dolist (i nz)
+      (dolist (c1-c2 p2)
+        (dolist (dxyz-c1-c2 (convert-dxyz c1-c2 i dz nz nt eps))
+          (dolist (dxyz dxyz-c1-c2)
+            (push dxyz ret)))))
     (optimize-relative-distances (nreverse ret))))
 
 #|

@@ -25,6 +25,8 @@
 
 (defparameter e-box (emitt-scad-box tbox))
 
+(defparameter square '((0. . 0.) (10. . 0.) (10. . 10.) (0. . 10.)))
+
 (defparameter rhomb '((0 . 10) (10 . 0) (20 . 10) (10 . 20)))
 
 (defun run-tests ()
@@ -82,8 +84,7 @@
     (assert (equal ret (insert-tag c1-c2 2)))
     (assert (= 4. (round* (euklid (c- (cadadr ret) (cddadr ret)))))))
 
-  (let ((square '((0. . 0.) (10. . 0.) (10. . 10.) (0. . 10.)))
-        (ret '(((0 . 0) 2.5 . 0.0)
+  (let ((ret '(((0 . 0) 2.5 . 0.0)
                (:TAG (2.5 . 0.0) 7.5 . 0.0)
                ((7.5 . 0.0) 10 . 0)
                ;;
@@ -98,20 +99,38 @@
                ((0 . 10) 0.0 . 7.5)
                (:TAG (0.0 . 7.5) 0.0 . 2.5)
                ((0.0 . 2.5) 0 . 0))))
-    (assert (equal ret (insert-tags square (group-2 square) 2.5)))
-    
-    (flet ((convert-dxyz- (c1-c2) (convert-dxyz c1-c2 1 0.5 5)))
-    (let ((ret '((((2.5 . 0) . 0)) (((5.0 . 0) . 0))
-                 (((2.5 . 0) . 0)) (((0 . 2.5) . 0))
-                 ;;
-                 (((0 . 5.0) . 0)) (((0 . 2.5) . 0))
-                 (((-2.5 . 0) . 0)) (((-5.0 . 0) . 0))
-                 ;;
-                 (((-2.5 . 0) . 0)) (((0 . -2.5) . 0))
-                 (((0 . -5.0) . 0)) (((0 . -2.5) . 0)))))
+    (assert (equal ret (insert-tags square (group-2 square) 2.5))))
+  
+  (flet ((convert-dxyz- (c1-c2) (convert-dxyz c1-c2 1 0.5 5)))
+    (let ((ret '((((2.5 . 0.0) . 0.5))
+                 (((5.0 . 0.0) . 0.5))
+                 (((2.5 . 0.0) . 0.5))
+                 (((0.0 . 2.5) . 0.5))
+                 (((0.0 . 5.0) . 0.5))
+                 (((0.0 . 2.5) . 0.5))
+                 (((-2.5 . 0.0) . 0.5))
+                 (((-5.0 . 0.0) . 0.5))
+                 (((-2.5 . 0.0) . 0.5))
+                 (((0.0 . -2.5) . 0.5))
+                 (((0.0 . -5.0) . 0.5))
+                 (((0.0 . -2.5) . 0.5)))))
       (assert (equal ret
                      (mapcar #'convert-dxyz-
-                             (insert-tags square (group-2 square) 2.5))))))))
+                             (insert-tags square (group-2 square) 2.5))))))
+
+  (flet ((convert-dxyz- (c1-c2) (convert-dxyz c1-c2 4 0.5 5)))
+    (let ((ret '((((2.5 . 0) . 0)) (((5.0 . 0) . 0)) (((2.5 . 0) . 0))
+                 ;;
+                 (((0 . 2.5) . 0)) (((0 . 5.0) . 0)) (((0 . 2.5) . 0))
+                 ;;
+                 (((-2.5 . 0) . 0)) (((-5.0 . 0) . 0)) (((-2.5 . 0) . 0))
+                 ;;
+                 (((0 . -2.5) . 0)) (((0 . -5.0) . 0)) (((0 . -2.5) . 0)))))
+      (format t "~a" (mapcar #'convert-dxyz-
+                             (insert-tags square (group-2 square) 2.5)))
+      (assert (equal ret
+                     (mapcar #'convert-dxyz-
+                             (insert-tags square (group-2 square) 2.5)))))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)
