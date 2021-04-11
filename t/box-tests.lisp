@@ -98,7 +98,20 @@
                ((0 . 10) 0.0 . 7.5)
                (:TAG (0.0 . 7.5) 0.0 . 2.5)
                ((0.0 . 2.5) 0 . 0))))
-    (assert (equal ret (insert-tags square (group-2 square) 2.5)))))
+    (assert (equal ret (insert-tags square (group-2 square) 2.5)))
+    
+    (flet ((convert-dxyz- (c1-c2) (convert-dxyz c1-c2 1 0.5 5)))
+    (let ((ret '((((2.5 . 0) . 0)) (((5.0 . 0) . 0))
+                 (((2.5 . 0) . 0)) (((0 . 2.5) . 0))
+                 ;;
+                 (((0 . 5.0) . 0)) (((0 . 2.5) . 0))
+                 (((-2.5 . 0) . 0)) (((-5.0 . 0) . 0))
+                 ;;
+                 (((-2.5 . 0) . 0)) (((0 . -2.5) . 0))
+                 (((0 . -5.0) . 0)) (((0 . -2.5) . 0)))))
+      (assert (equal ret
+                     (mapcar #'convert-dxyz-
+                             (insert-tags square (group-2 square) 2.5))))))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)

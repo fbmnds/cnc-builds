@@ -39,7 +39,10 @@
            #:emitt-gcode-path
            #:emitt-gcode
            #:insert-tag
-           #:insert-tags))
+           #:insert-tags
+           #:convert-dxyz
+           #:optimize-relative-distances
+           #:convert-path-dxyz))
 
 (defpackage #:paths/box
   (:use #:cl)
