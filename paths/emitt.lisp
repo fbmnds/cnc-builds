@@ -98,6 +98,47 @@
               (cons (cons 0. 0.) c-dz))
         (list (cons (cons c-dx c-dy) c-dz)))))
 
+(defun optimize-xy (path-dxyz)
+  "Accumulate unidirectional X and Y movements, separately."
+  (let ((c-d0 nil)
+        (ret nil))
+    (dolist (c-dxyz path-dxyz)
+      (let* ((c-dxyz (round* c-dxyz))
+             (c-dx (caar c-dxyz))
+             (c-dy (cdar c-dxyz))
+             (c-dz (cdr c-dxyz))
+             (c-d0x (caar c-d0))
+             (c-d0y (cdar c-d0))
+             (c-d0z (cdr c-d0)))
+        (cond ((null c-d0)
+               (cond ((and (zerop* c-dx) (not (zerop* c-dy)))
+                      (setf c-d0 c-dxyz))
+                     ((and (zerop* c-dy) (not (zerop* c-dx)))
+                      (setf c-d0 c-dxyz))
+                     (t
+                      (push c-dxyz ret))))
+              (t
+               (cond ((and (zerop* c-dx) (not (zerop* c-dy))
+                           (zerop* c-d0x) (not (zerop* c-d0y))
+                           (zerop* (- c-dz c-d0z)))
+                      (setf c-d0 (cons (cons 0. (+ c-dy c-d0y)) c-dz)))
+                     ((and (zerop* c-dx) (not (zerop* c-dy)) (not (zerop* c-d0x)))
+                      (push c-d0 ret)
+                      (setf c-d0 c-dxyz))
+                     ((and (zerop* c-dy) (not (zerop* c-dx))
+                           (zerop* c-d0y) (not (zerop* c-d0x))
+                           (zerop* (- c-dz c-d0z)))
+                      (setf c-d0 (cons (cons (+ c-dx c-d0x ) 0.) c-dz)))
+                     ((and (zerop* c-dy) (not (zerop* c-dx)) (not (zerop* c-d0y)))
+                      (push c-d0 ret)
+                      (setf c-d0 c-dxyz))
+                     (t
+                      (push c-d0 ret)
+                      (setf c-d0 nil)
+                      (push c-dxyz ret)))))))
+    (nreverse ret)))
+                                                 
+
 (defun optimize-relative-distances (path-dxyz &optional (eps 0.001))
   "Accumulate marginal and unidirectional movements."
   (let ((c-d0 nil)
@@ -110,67 +151,88 @@
              (c-dx* (caar c-d*))
              (c-dy* (cdar c-d*))
              (c-dz* (cdr c-d*))
-             (c-dxx* (round* (+ c-dx c-dx*)))
-             (c-dyy* (round* (+ c-dy c-dy*)))
-             (c-dzz* (round* (+ c-dz c-dz*))))
+             (c-dxx* (+ c-dx c-dx*))
+             (c-dyy* (+ c-dy c-dy*))
+             (c-dzz* (+ c-dz c-dz*)))
         (cond ((and (> (abs c-dxx*) eps)
                     (> (abs c-dyy*) eps)
-                    (> (abs c-dyy*) eps))
+                    (> (abs c-dzz*) eps))
                (setf c-d* (cons (cons 0. 0.) 0.))
+               (when c-d0
+                 (push c-d0 ret)
+                 (setf c-d0 nil))
                (push (cons (cons c-dxx* c-dyy*) c-dzz*) ret))
               ((and (> (abs c-dxx*) eps) (> (abs c-dyy*) eps))
                (setf c-d* (cons (cons 0. 0.) c-dzz*))
+               (when c-d0
+                 (push c-d0 ret)
+                 (setf c-d0 nil))
                (push (cons (cons c-dxx* c-dyy*) 0.) ret))
               ((and (> (abs c-dxx*) eps) (> (abs c-dzz*) eps))
                (setf c-d* (cons (cons 0. c-dyy*) 0.))
+               (when c-d0
+                 (push c-d0 ret)
+                 (setf c-d0 nil))
                (push (cons (cons c-dxx* 0.) c-dzz*) ret))
               ((and (> (abs c-dyy*) eps) (> (abs c-dzz*) eps))
                (setf c-d* (cons (cons c-dxx* 0.) 0.))
+               (when c-d0
+                 (push c-d0 ret)
+                 (setf c-d0 nil))
                (push (cons (cons 0. c-dyy*) c-dzz*) ret))
-              ((cond ((null c-d0)
-                      (setf c-d0 (cons (cons c-dxx* c-dyy*) c-dzz*)))
-                     ((and (zerop (cdar c-d0)) (zerop (cdr c-d0)))
-                      (setf c-d0
-                            (cons (cons (+ (caar c-d0) c-dxx*) c-dyy*) c-dzz*)))
-                     (t
-                      (when c-d0 (push c-d0 ret))
+              ((> (abs c-dxx*) eps)
+               (cond ((null c-d0)
+                      (setf c-d0 (cons (cons c-dxx* 0.) 0.))
+                      (setf c-d* (cons (cons 0. c-dyy*) c-dzz*)))
+                     ((and c-d0 (zerop* (cdar c-d0)) (zerop* (cdr c-d0)))
+                      (setf c-d0 (cons (cons (+ c-dxx* (caar c-d0)) 0.) 0.))
+                      (setf c-d* (cons (cons 0. c-dyy*) c-dzz*)))
+                     (t 
+                      (when c-d0
+                        (push c-d0 ret)
+                        (setf c-d0 nil))
                       (setf c-d0 (cons (cons c-dxx* 0.) 0.))
                       (setf c-d* (cons (cons 0. c-dyy*) c-dzz*)))))
               ((> (abs c-dyy*) eps)
-               (if (and c-d0 (zerop (caar c-d0)) (zerop (cdr c-d0)))
-                   (setf c-d0
-                         (cons (cons c-dxx* (+ (cdar c-d0) c-dyy*)) c-dzz*))
-                   (progn
-                     (when c-d0 (push c-d0 ret))
-                     (setf c-d0 (cons (cons 0. c-dyy*) 0.))
-                     (setf c-d* (cons (cons c-dxx* 0.) c-dzz*)))))
+               (cond ((null c-d0)
+                      (setf c-d0 (cons (cons 0. c-dyy*) 0.))
+                      (setf c-d* (cons (cons c-dxx* 0.) c-dzz*)))
+                     ((and c-d0 (zerop* (caar c-d0)) (zerop* (cdr c-d0)))
+                      (setf c-d0 (cons (cons 0. (+ c-dyy* (cdar c-d0))) 0.))
+                      (setf c-d* (cons (cons c-dxx* 0.) c-dzz*)))
+                     (t
+                      (when c-d0
+                        (push c-d0 ret)
+                        (setf c-d0 nil))
+                      (setf c-d0 (cons (cons 0. c-dyy*) 0.))
+                      (setf c-d* (cons (cons c-dxx* 0.) c-dzz*)))))
               ((> (abs c-dzz*) eps)
-               (if (and c-d0 (zerop (caar c-d0)) (zerop (cdar c-d0)))
-                   (setf c-d0
-                         (cons (cons c-dxx* c-dyy*) (+ (cdr c-d0) c-dzz*)))
-                   (progn
-                     (push c-d0 ret)
-                     (setf c-d0 (cons (cons 0. 0.) c-dzz*))
-                     (setf c-d* (cons (cons c-dxx* 0.) c-dzz*)))))
+               (when c-d0
+                 (push c-d0 ret)
+                 (setf c-d0 nil))
+               (setf c-d* (cons (cons c-dxx* c-dyy*) 0.))
+               (push (cons (cons 0. 0.) c-dzz*) ret))
               (t
                (setf c-d* (cons (cons c-dxx* c-dyy*) c-dzz*))))))
-    (push c-d0 ret) ;; might be marginal move in X, Y, Z
-    (nreverse ret)))
+    (when c-d0 (push (c+ c-d0 c-d*) ret))
+    (reverse ret)))
 
 (defun convert-path-dxyz% (path tags w/2 dz nz &optional (nt (/ nz 2)))
   "Convert a PATH with TAGS into relative distances ((DX . DY) . DZ)."
   (let ((p2 (insert-tags path tags w/2))
         (ret nil))
     (dotimes (i nz)
-      (dolist (c1-c2- p2)
+      (when (> i 0)
+        (dolist (c1-c2- p2)
         (dolist (dxyz-c1-c2 (convert-dxyz c1-c2- i dz nz nt))
-          (push dxyz-c1-c2 ret))))
+          (push dxyz-c1-c2 ret)))))
     (nreverse ret)))
 
 (defun convert-path-dxyz (path tags w/2 dz nz
                           &optional (nt (/ nz 2)) (eps 0.001))
   "Convert a PATH with TAGS into optimized relative distances ((DX . DY) . DZ)."
-  (optimize-relative-distances (convert-path-dxyz% path tags w/2 dz nz nt) eps))
+  (declare (ignore eps))
+  (optimize-xy (convert-path-dxyz% path tags w/2 dz nz nt)))
 
 #|
 (defun emitt-gcode-tagged-path

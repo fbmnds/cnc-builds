@@ -42,6 +42,7 @@
          (cons (round* (car x)) (round* (cdr x))))
         (t (error (format nil "round* undefined for ~a" x)))))
 
+(defun zerop* (x) (when (> *precision* (abs x)) t))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (defun expand-call (type expr)
@@ -69,7 +70,16 @@
 
 (defun c- (c1 c2) (round* (cons (- (car c1) (car c2)) (- (cdr c1) (cdr c2)))))
 
-(defun c+ (c1 c2) (round* (cons (+ (car c1) (car c2)) (+ (cdr c1) (cdr c2)))))
+(defun c+ (c1 c2)
+  (cond ((and (consp c1) (consp c2)
+              (numberp (car c1)) (numberp (cdr c1))
+              (numberp (car c2)) (numberp (cdr c2)))
+         (round* (cons (+ (car c1) (car c2)) (+ (cdr c1) (cdr c2)))))
+        ((and (consp c1) (consp c2)
+              (consp (car c1)) (numberp (cdr c1))
+              (consp (car c2)) (numberp (cdr c2)))
+         (cons (c+ (car c1) (car c2)) (round* (+ (cdr c1) (cdr c2)))))
+        (t (error (format nil "c+ undefined for ~a~%~a~%" c1 c2)))))
 
 (defun c* (r c) (round* (cons (* r (car c)) (* r (cdr c)))))
 
@@ -78,7 +88,7 @@
 (defun c= (c1 c2)
   (cond ((and (numberp c1) (numberp c2)) (and (> *precision* (abs (- c1 c2)))))
         ((and (consp c1) (consp c2)) (> *precision* (euklid (c- c1 c2))))
-        (t (error (format "c= undefined for ~a%~a%" c1 c2)))))
+        (t (error (format nil "c= undefined for ~a%~a%" c1 c2)))))
 
 (defun c1-c2= (s1 s2) (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
 

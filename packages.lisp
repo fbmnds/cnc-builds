@@ -3,6 +3,7 @@
   (:use #:cl)
   (:export #:*precision*
            #:round*
+           #:zerop*
            #:c1-c2=
            #:group-2
            #:group-3
