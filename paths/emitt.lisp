@@ -61,8 +61,8 @@
   "Insert a tagged centered path segment of length W between C1 and C2."
   (let* ((c1 (car c1-c2))
          (c2 (cdr c1-c2))
-         (mid (c+ c1 (c* 0.5 (c- c2 c1))))
-         (mid-w/2 (c* w/2 (c-normed (c- mid c1))))
+         (mid (c* 0.5 (c+ c2 c1)))
+         (mid-w/2 (c* w/2 (c-normed (c- c2 c1))))
          (w- (c- mid mid-w/2))
          (w+ (c+ mid mid-w/2)))
     (list (cons c1 w-) (cons :tag (cons w- w+)) (cons w+ c2))))

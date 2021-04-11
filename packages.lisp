@@ -38,7 +38,8 @@
            #:emitt-scad-box
            #:emitt-gcode-path
            #:emitt-gcode
-           #:insert-tag))
+           #:insert-tag
+           #:insert-tags))
 
 (defpackage #:paths/box
   (:use #:cl)

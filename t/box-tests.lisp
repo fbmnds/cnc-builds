@@ -80,7 +80,25 @@
                (:TAG (8.211145 . 4.1055727) 11.788855 . 5.8944273)
                ((11.788855 . 5.8944273) 20 . 10))))
     (assert (equal ret (insert-tag c1-c2 2)))
-    (assert (= 4. (round* (euklid (c- (cadadr ret) (cddadr ret))))))))
+    (assert (= 4. (round* (euklid (c- (cadadr ret) (cddadr ret)))))))
+
+  (let ((square '((0. . 0.) (10. . 0.) (10. . 10.) (0. . 10.)))
+        (ret '(((0 . 0) 2.5 . 0.0)
+               (:TAG (2.5 . 0.0) 7.5 . 0.0)
+               ((7.5 . 0.0) 10 . 0)
+               ;;
+               ((10 . 0) 10.0 . 2.5)
+               (:TAG (10.0 . 2.5) 10.0 . 7.5)
+               ((10.0 . 7.5) 10 . 10)
+               ;;
+               ((10 . 10) 7.5 . 10.0)
+               (:TAG (7.5 . 10.0) 2.5 . 10.0)
+               ((2.5 . 10.0) 0 . 10)
+               ;;
+               ((0 . 10) 0.0 . 7.5)
+               (:TAG (0.0 . 7.5) 0.0 . 2.5)
+               ((0.0 . 2.5) 0 . 0))))
+    (assert (equal ret (insert-tags square (group-2 square) 2.5)))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)
