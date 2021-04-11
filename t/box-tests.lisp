@@ -88,7 +88,7 @@
                             (c1-c2= (cdr x) (cdr y))
                             (c1-c2= x y)))
                             ret (insert-tag c1-c2 2))))
-    (assert (> *precision* (- 4. (euklid (c- (cadadr ret) (cddadr ret)))))))
+    (assert (c= 4. (euklid (c- (cadadr ret) (cddadr ret))))))
 
   (let ((ret '(((0 . 0) 2.5 . 0.0)
                (:TAG (2.5 . 0.0) 7.5 . 0.0)
