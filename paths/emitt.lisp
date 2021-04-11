@@ -1,25 +1,6 @@
 
 (in-package #:paths/emitt)
 
-(defparameter *precision* 0.00001)
-
-(defun round* (x)
-  (cond ((numberp x) (* (round x *precision*) *precision*))
-        ((and (consp x) (eql :tag (car x))) (round* (cdr x)))
-        ((and (consp x) (numberp (car x)) (numberp (cdr x)))
-         (cons (round* (car x)) (round* (cdr x))))
-        ((and (consp x) (consp (car x)) (numberp (cdr x)))
-         (cons (round* (car x)) (round* (cdr x))))
-        (t (format nil "round* undefined for ~a" x))))
-
-(defun group-2 (l)
-  (let ((head (car l)))
-    (labels ((rec (l acc)
-               (cond ((and (car l) (cadr l))
-                      (rec (cdr l)
-                           (push (cons (car l) (cadr l)) acc)))
-                     (t (nreverse (cons (cons (cdar acc) head) acc))))))
-      (when l (rec l nil)))))
 
 (defun emitt-scad-cons (c &optional (v 3))
   (if (endp c)
@@ -93,8 +74,6 @@
     (dotimes (i n) (unless (zerop i) (push (c+ c1 (c* (/ i n) v)) ret)))
     (nreverse ret)))
 
-(defun c1-c2= (s1 s2) (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
-
 (defun insert-tags (path tags w/2)
   "Convert PATH into a LIST of tagged and untagged path segments."
   (let ((p2 (group-2 path))
@@ -106,7 +85,7 @@
       (dolist (c1-c2 p2) (push-it c1-c2))
       (nreverse ret))))
 
-(defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)) (eps 0.001))
+(defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
   "Convert a tagged path segment into relative distances ((DX . DY) . DZ)."
   (let* ((tag-p (eql :tag (car c1-c2)))
          (c-dz (round* (* i dz)))
@@ -121,12 +100,10 @@
 
 (defun optimize-relative-distances (path-dxyz &optional (eps 0.001))
   "Accumulate marginal and unidirectional movements."
-  (let ((c-d0 (cons (cons (round* (caaar path-dxyz))
-                          (round* (cdaar path-dxyz)))
-                    (round* (cdar path-dxyz))))
+  (let ((c-d0 nil)
         (c-d* (cons (cons 0. 0.) 0.))
         (ret nil))
-    (dolist (c-dxyz (cdr path-dxyz))
+    (dolist (c-dxyz path-dxyz)
       (let* ((c-dx (round* (caar c-dxyz)))
              (c-dy (round* (cdar c-dxyz)))
              (c-dz (round* (cdr c-dxyz)))
@@ -150,24 +127,25 @@
               ((and (> (abs c-dyy*) eps) (> (abs c-dzz*) eps))
                (setf c-d* (cons (cons c-dxx* 0.) 0.))
                (push (cons (cons 0. c-dyy*) c-dzz*) ret))
-              ((> (abs c-dxx*) eps)
-               (if (and (zerop (cdar c-d0)) (zerop (cdr c-d0)))
-                   (setf c-d0
-                         (cons (cons (+ (caar c-d0) c-dxx*) c-dyy*) c-dzz*))
-                   (progn
-                     (push c-d0 ret)
-                     (setf c-d0 (cons (cons c-dxx* 0.) 0.))
-                     (setf c-d* (cons (cons 0. c-dyy*) c-dzz*)))))
+              ((cond ((null c-d0)
+                      (setf c-d0 (cons (cons c-dxx* c-dyy*) c-dzz*)))
+                     ((and (zerop (cdar c-d0)) (zerop (cdr c-d0)))
+                      (setf c-d0
+                            (cons (cons (+ (caar c-d0) c-dxx*) c-dyy*) c-dzz*)))
+                     (t
+                      (when c-d0 (push c-d0 ret))
+                      (setf c-d0 (cons (cons c-dxx* 0.) 0.))
+                      (setf c-d* (cons (cons 0. c-dyy*) c-dzz*)))))
               ((> (abs c-dyy*) eps)
-               (if (and (zerop (caar c-d0)) (zerop (cdr c-d0)))
+               (if (and c-d0 (zerop (caar c-d0)) (zerop (cdr c-d0)))
                    (setf c-d0
                          (cons (cons c-dxx* (+ (cdar c-d0) c-dyy*)) c-dzz*))
                    (progn
-                     (push c-d0 ret)
+                     (when c-d0 (push c-d0 ret))
                      (setf c-d0 (cons (cons 0. c-dyy*) 0.))
                      (setf c-d* (cons (cons c-dxx* 0.) c-dzz*)))))
               ((> (abs c-dzz*) eps)
-               (if (and (zerop (caar c-d0)) (zerop (cdar c-d0)))
+               (if (and c-d0 (zerop (caar c-d0)) (zerop (cdar c-d0)))
                    (setf c-d0
                          (cons (cons c-dxx* c-dyy*) (+ (cdr c-d0) c-dzz*)))
                    (progn
@@ -179,29 +157,20 @@
     (push c-d0 ret) ;; might be marginal move in X, Y, Z
     (nreverse ret)))
 
+(defun convert-path-dxyz% (path tags w/2 dz nz &optional (nt (/ nz 2)))
+  "Convert a PATH with TAGS into relative distances ((DX . DY) . DZ)."
+  (let ((p2 (insert-tags path tags w/2))
+        (ret nil))
+    (dotimes (i nz)
+      (dolist (c1-c2- p2)
+        (dolist (dxyz-c1-c2 (convert-dxyz c1-c2- i dz nz nt))
+          (push dxyz-c1-c2 ret))))
+    (nreverse ret)))
+
 (defun convert-path-dxyz (path tags w/2 dz nz
                           &optional (nt (/ nz 2)) (eps 0.001))
   "Convert a PATH with TAGS into optimized relative distances ((DX . DY) . DZ)."
-  (let ((p2 (insert-tags path tags w/2))
-        (ret nil))
-    (dolist (i nz)
-      (dolist (c1-c2 p2)
-        (dolist (dxyz-c1-c2 (convert-dxyz c1-c2 i dz nz nt eps))
-          (dolist (dxyz dxyz-c1-c2)
-            (push dxyz ret)))))
-    (nreverse ret)))
-
-(defun convert-path-dxyz-2 (path tags w/2 dz nz
-                          &optional (nt (/ nz 2)) (eps 0.001))
-  "Convert a PATH with TAGS into optimized relative distances ((DX . DY) . DZ)."
-  (let ((p2 (insert-tags path tags w/2))
-        (ret nil))
-    (dolist (i nz)
-      (dolist (c1-c2 p2)
-        (dolist (dxyz-c1-c2 (convert-dxyz c1-c2 i dz nz nt eps))
-          (dolist (dxyz dxyz-c1-c2)
-            (push dxyz ret)))))
-    (optimize-relative-distances (nreverse ret))))
+  (optimize-relative-distances (convert-path-dxyz% path tags w/2 dz nz nt) eps))
 
 #|
 (defun emitt-gcode-tagged-path

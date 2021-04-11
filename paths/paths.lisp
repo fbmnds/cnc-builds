@@ -1,6 +1,9 @@
 
 (in-package #:paths)
 
+
+(defparameter *precision* 0.000001)
+
 ;; On Lisp, pp. 47, 219, 410(?)
 
 (defun group-3 (l)
@@ -18,6 +21,27 @@
                            (cons (list (car l) c0 c1) acc)))
                      (t (nreverse acc)))))
       (when l (rec l nil)))))
+
+(defun group-2 (l)
+  (let ((head (car l)))
+    (labels ((rec (l acc)
+               (cond ((and (car l) (cadr l))
+                      (rec (cdr l)
+                           (push (cons (car l) (cadr l)) acc)))
+                     (t (nreverse (cons (cons (cdar acc) head) acc))))))
+      (when l (rec l nil)))))
+
+(defun round* (x)
+  (cond ((numberp x) (* (round x *precision*) *precision*))
+        ((and (consp x) (eql :tag (car x))) (round* (cdr x)))
+        ((and (listp x) (consp (car x)) (consp (cdr x)))
+         (cons (round* (car x)) (round* (cdr x))))
+        ((and (consp x) (numberp (car x)) (numberp (cdr x)))
+         (cons (round* (car x)) (round* (cdr x))))
+        ((and (consp x) (consp (car x)) (numberp (cdr x)))
+         (cons (round* (car x)) (round* (cdr x))))
+        (t (error (format nil "round* undefined for ~a" x)))))
+
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (defun expand-call (type expr)
@@ -43,28 +67,33 @@
 
 ;;;
 
-(defun c- (c1 c2) (cons (- (car c1) (car c2)) (- (cdr c1) (cdr c2))))
+(defun c- (c1 c2) (round* (cons (- (car c1) (car c2)) (- (cdr c1) (cdr c2)))))
 
-(defun c+ (c1 c2) (cons (+ (car c1) (car c2)) (+ (cdr c1) (cdr c2))))
+(defun c+ (c1 c2) (round* (cons (+ (car c1) (car c2)) (+ (cdr c1) (cdr c2)))))
 
-(defun c* (r c) (cons (* r (car c)) (* r (cdr c))))
+(defun c* (r c) (round* (cons (* r (car c)) (* r (cdr c)))))
 
-(defun euklid (c) (sqrt (+ (expt (car c) 2) (expt (cdr c) 2))))
+(defun euklid (c) (round* (sqrt (+ (expt (car c) 2) (expt (cdr c) 2)))))
 
-(defun c= (c1 c2) (and (= (car c1) (car c2)) (= (cdr c1) (cdr c2))))
+(defun c= (c1 c2)
+  (let ((c1 (round* c1))
+        (c2 (round* c2)))
+    (and (= (car c1) (car c2)) (= (cdr c1) (cdr c2)))))
+
+(defun c1-c2= (s1 s2) (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
 
 (defun c-normed (c)
   (let ((e2 (euklid c)))
-    (cons (/ (car c) e2) (/ (cdr c) e2))))
+    (round* (cons (/ (car c) e2) (/ (cdr c) e2)))))
 
 (defun normale-+ (c1 c2)
   (let ((d (c-normed (c- c1 c2))))
     (cond ((c= c1 c2) (error "undefined normale on zero vector"))
-          (t (cons (* -1.0 (cdr d)) (car d))))))
+          (t (round* (cons (* -1.0 (cdr d)) (car d)))))))
 
 (defun normale-- (c1 c2) (c* -1.0 (normale-+ c1 c2)))
 
-(defun det2 (c1 c2) (- (* (car c1) (cdr c2)) (* (car c2) (cdr c1))))
+(defun det2 (c1 c2) (round* (- (* (car c1) (cdr c2)) (* (car c2) (cdr c1)))))
 
 ;; M = a b
 ;;     c d
@@ -75,18 +104,17 @@
 (defun linear-solution (m1 m2 b)
   (ignore-errors
    (let ((det (det2 m1 m2)))
-     (cons (/ (+ (* (cdr m2) (car b)) (* (cdr m1) (cdr b))) det)
-           (/ (- (* (car m1) (cdr b)) (* (car m2) (car b))) det)))))
+     (round* (cons (/ (+ (* (cdr m2) (car b)) (* (cdr m1) (cdr b))) det)
+                   (/ (- (* (car m1) (cdr b)) (* (car m2) (car b))) det))))))
 
 (defun radius-center-in-corner (c1 c2 c3 c4)
   (ignore-errors
-   (c+ c2 (c*
-           (car (c+ c2
-                    (c* (car (linear-solution (normale-+ c1 c2)
-                                              (normale-+ c3 c4)
-                                              (c- c3 c2)))
-                        (normale-+ c1 c2))))
-           (normale-+ c1 c2)))))
+   (round* (c+ c2
+               (c* (car (c+ c2 (c* (car (linear-solution (normale-+ c1 c2)
+                                                         (normale-+ c3 c4)
+                                                         (c- c3 c2)))
+                                   (normale-+ c1 c2))))
+                   (normale-+ c1 c2))))))
 
 #|
 (paths:radius-center-in-corner '(0 . 0) '(0 . 1) '(0.5 . 1.5) '(1.5 . 1.5))

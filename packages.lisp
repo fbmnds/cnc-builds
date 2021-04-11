@@ -1,7 +1,11 @@
 
 (defpackage #:paths
   (:use #:cl)
-  (:export #:group-3
+  (:export #:*precision*
+           #:round*
+           #:c1-c2=
+           #:group-2
+           #:group-3
            #:with-type
            #:c-
            #:c+
@@ -29,10 +33,7 @@
 
 (defpackage #:paths/emitt
   (:use #:cl #:paths)
-  (:export #:*precision*
-           #:round*
-           #:c1-c2=
-           #:group
+  (:export  #:group
            #:group-2
            #:emitt-scad
            #:emitt-scad-box
