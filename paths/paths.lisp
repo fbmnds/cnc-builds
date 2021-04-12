@@ -83,7 +83,13 @@
 
 (defun c* (r c) (round* (cons (* r (car c)) (* r (cdr c)))))
 
-(defun euklid (c) (round* (sqrt (+ (expt (car c) 2) (expt (cdr c) 2)))))
+(defun euklid (c)
+  (cond ((and (consp c) (numberp (car c)) (numberp (cdr c)))
+         (round* (sqrt (+ (expt (car c) 2) (expt (cdr c) 2)))))
+        ((and (consp c) (consp (car c)) (consp (cdr c)))
+         (euklid (c- (car c) (cdr c))))
+        (t (error
+            (format nil "euklid distance calculation not defined for ~a%" c)))))
 
 (defun c= (c1 c2)
   (cond ((and (numberp c1) (numberp c2)) (and (> *precision* (abs (- c1 c2)))))
