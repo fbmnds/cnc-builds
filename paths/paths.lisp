@@ -68,42 +68,93 @@
 
 ;;;
 
-(defun c- (c1 c2) (round* (cons (- (car c1) (car c2)) (- (cdr c1) (cdr c2)))))
+(defun xy-p (c) (and (consp c) (numberp (car c)) (numberp (cdr c))))
+(defun xyz-p (c) (and (consp c) (xy-p (car c)) (numberp (cdr c))))
+(defun tag-xyz-p (c) (and (consp c) (xy-p (car c)) (numberp (cdr c))))
+
+(deftype coord-xy () '(satisfies xy-p))
+(deftype coord-xyz () '(satisfies xyz-p))
+(deftype coord-tag-xyz () '(satisfies tag-xyz-p))
+
+;;;
+
+(defun c-x (c)
+  (typecase c
+    (coord-xy (round* (car c)))
+    (coord-xyz (c-x (car c)))
+    (t (error (format nil "c-x undefined for ~a" c)))))
+
+(defun c-y (c)
+  (typecase c
+    (coord-xy (round* (cdr c)))
+    (coord-xyz (c-y (car c)))
+    (t (error (format nil "c-y undefined for ~a" c)))))
+
+(defun c-z (c)
+  (typecase c
+    (coord-xyz (round* (cdr c)))
+    (t (error (format nil "c-z undefined for ~a" c)))))
+
+(defun c- (c1 c2)
+  (cond ((and (xy-p c1) (xy-p c2))
+         (cons (- (c-x c1) (c-x c2)) (- (c-y c1) (c-y c2))))
+        ((and (xyz-p c1) (xyz-p c2))
+         (cons (cons (- (c-x c1) (c-x c2))
+                     (- (c-y c1) (c-y c2)))
+               (- (c-z c1) (c-z c2))))
+        (t (error (format nil "c- undefined for ~a ~a" c1 c2)))))
+
+(defun c2-c1- (c1-c2)
+  (if (or (and (xy-p (car c1-c2)) (xy-p (cdr c1-c2)))
+          (and (xyz-p (car c1-c2)) (xyz-p (cdr c1-c2))))
+      (c- (cdr c1-c2) (car c1-c2))
+      (error (format nil "c2-c1- undefined for ~a" c1-c2))))
 
 (defun c+ (c1 c2)
-  (cond ((and (consp c1) (consp c2)
-              (numberp (car c1)) (numberp (cdr c1))
-              (numberp (car c2)) (numberp (cdr c2)))
-         (round* (cons (+ (car c1) (car c2)) (+ (cdr c1) (cdr c2)))))
-        ((and (consp c1) (consp c2)
-              (consp (car c1)) (numberp (cdr c1))
-              (consp (car c2)) (numberp (cdr c2)))
-         (cons (c+ (car c1) (car c2)) (round* (+ (cdr c1) (cdr c2)))))
-        (t (error (format nil "c+ undefined for ~a~%~a~%" c1 c2)))))
+  (cond ((and (xy-p c1) (xy-p c2))
+         (cons (+ (c-x c1) (c-x c2)) (+ (c-y c1) (c-y c2))))
+        ((and (xyz-p c1) (xyz-p c2))
+         (cons (cons (+ (c-x c1) (c-x c2))
+                     (+ (c-y c1) (c-y c2)))
+               (+ (c-z c1) (c-z c2))))
+        (t (error (format nil "c+ undefined for ~a ~a" c1 c2)))))
 
-(defun c* (r c) (round* (cons (* r (car c)) (* r (cdr c)))))
+(defun c* (r c)
+  (cond ((and (numberp r) (xy-p c))
+         (cons (round* (* r (c-x c))) (round* (* r (c-y c)))))
+        ((and (numberp r) (xyz-p c))
+         (cons (c* r (car c)) (round* (* r (cdr c)))))
+        (t (error (format nil "c* undefined for ~a ~a" r c)))))
 
-(defun euklid (c) (round* (sqrt (+ (expt (car c) 2) (expt (cdr c) 2)))))
+(defun euklid (c)
+  (typecase c
+    (coord-xy (round* (sqrt (+ (* (c-x c) (c-x c))
+                               (* (c-y c) (c-y c))))))
+    (coord-xyz (round* (sqrt (+ (* (c-x c) (c-x c))
+                                (* (c-y c) (c-y c))
+                                (* (c-z c) (c-z c))))))
+    (t (error (format nil "euklid undefined for ~a" c)))))
 
 (defun c= (c1 c2)
-  (cond ((and (numberp c1) (numberp c2)) (and (> *precision* (abs (- c1 c2)))))
-        ((and (consp c1) (consp c2)) (> *precision* (euklid (c- c1 c2))))
-        (t (error (format nil "c= undefined for ~a%~a%" c1 c2)))))
+  (cond ((and (numberp c1) (numberp c2))
+         (> *precision* (- c1 c2)))
+        (t (> *precision* (euklid (c- c1 c2))))))
 
 (defun c1-c2= (s1 s2) (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
 
 (defun c-normed (c)
-  (let ((e2 (euklid c)))
-    (round* (cons (/ (car c) e2) (/ (cdr c) e2)))))
+  (typecase c
+    (coord-xy (c* (/ 1. (euklid c)) c))
+    (t (error (format nil "c-normed undefined for ~a" c)))))
 
 (defun normale-+ (c1 c2)
   (let ((d (c-normed (c- c1 c2))))
     (cond ((c= c1 c2) (error "undefined normale on zero vector"))
-          (t (round* (cons (* -1.0 (cdr d)) (car d)))))))
+          (t (round* (cons (* -1.0 (c-y d)) (c-x d)))))))
 
 (defun normale-- (c1 c2) (c* -1.0 (normale-+ c1 c2)))
 
-(defun det2 (c1 c2) (round* (- (* (car c1) (cdr c2)) (* (car c2) (cdr c1)))))
+(defun det2 (c1 c2) (round* (- (* (c-x c1) (c-y c2)) (* (c-x c2) (c-y c1)))))
 
 ;; M = a b
 ;;     c d

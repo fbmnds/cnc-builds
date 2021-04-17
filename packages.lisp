@@ -4,11 +4,15 @@
   (:export #:*precision*
            #:round*
            #:zerop*
+           #:c-x
+           #:c-y
+           #:c-z
            #:c1-c2=
            #:group-2
            #:group-3
            #:with-type
            #:c-
+           #:c2-c1-
            #:c+
            #:c*
            #:euklid
@@ -35,16 +39,16 @@
 (defpackage #:paths/emitt
   (:use #:cl #:paths)
   (:export  #:group
-           #:group-2
-           #:emitt-scad
-           #:emitt-scad-box
-           #:emitt-gcode-path
-           #:emitt-gcode
-           #:insert-tag
-           #:insert-tags
-           #:convert-dxyz
-           #:optimize-relative-distances
-           #:convert-path-dxyz))
+            #:group-2
+            #:emitt-scad
+            #:emitt-scad-box
+            #:emitt-gcode-path
+            #:emitt-gcode
+            #:insert-tag
+            #:insert-tags
+            #:convert-dxyz
+            #:optimize-relative-distances
+            #:convert-path-dxyz))
 
 (defpackage #:paths/box
   (:use #:cl)
