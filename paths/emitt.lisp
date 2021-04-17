@@ -256,10 +256,15 @@
                   ((> (round* (* c0-z dz)) 0.)
                    (setf gc (format nil "F~v$" v f)))
                   (t :ignore))
-            (setf c0-z c-z)
+            
             (unless (zerop* c-y) (setf gc (format nil "Y~v$ ~a" v c-y gc)))
             (unless (zerop* c-x) (setf gc (format nil "X~v$ ~a" v c-x gc)))
-            (push (string-trim '(#\ ) (format nil "G0 ~a" gc)) ret))))
+            (let ((gc (string-trim '(#\ ) (format nil "G0 ~a" gc))))
+              (if (string= gc "G0")
+                  (print c)
+                  (progn
+                    (setf c0-z c-z)
+                    (push gc ret)))))))
     (nreverse ret)))
 
 #|
