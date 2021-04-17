@@ -54,6 +54,7 @@
             #:convert-dxyz
             #:optimize-relative-distances
             #:convert-path-dxyz
+            #:convert-path-dxyz%
             #:emitt-gcode-xy-z))
 
 (defpackage #:paths/box
