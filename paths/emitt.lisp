@@ -86,17 +86,17 @@
       (nreverse ret))))
 
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
-  "Convert a tagged path segment into relative distances ((DX . DY) . DZ)."
+  "Convert a tagged path segment into relative distances."
   (let* ((tag-p (eql :tag (car c1-c2)))
          (c-dz (round* (* i dz)))
-         (c1-c2 (if tag-p (cdr c1-c2) c1-c2))
-         (c-dx (round* (- (cadr c1-c2) (caar c1-c2))))
-         (c-dy (round* (- (cddr c1-c2) (cdar c1-c2)))))
+         (c1-c2 (if tag-p (c2-c1- (cdr c1-c2)) (c2-c1- c1-c2)))
+         (c-dx (c-x c1-c2))
+         (c-dy (c-y c1-c2)))
     (if (and tag-p (> i (- nz nt)))
         (list (cons (cons 0. 0.) (* -1. c-dz))
               (cons (cons c-dx c-dy) 0.)
               (cons (cons 0. 0.) c-dz))
-        (list (cons (cons c-dx c-dy) c-dz)))))
+        (list (cons (cons c-dx c-dy) 0.)))))
 
 (defun optimize-xy (path-dxyz)
   "Accumulate unidirectional X and Y movements, separately."
@@ -122,14 +122,16 @@
                            (zerop* c-d0x) (not (zerop* c-d0y))
                            (zerop* (- c-dz c-d0z)))
                       (setf c-d0 (cons (cons 0. (+ c-dy c-d0y)) c-dz)))
-                     ((and (zerop* c-dx) (not (zerop* c-dy)) (not (zerop* c-d0x)))
+                     ((and (zerop* c-dx)
+                           (not (zerop* c-dy)) (not (zerop* c-d0x)))
                       (push c-d0 ret)
                       (setf c-d0 c-dxyz))
                      ((and (zerop* c-dy) (not (zerop* c-dx))
                            (zerop* c-d0y) (not (zerop* c-d0x))
                            (zerop* (- c-dz c-d0z)))
                       (setf c-d0 (cons (cons (+ c-dx c-d0x ) 0.) c-dz)))
-                     ((and (zerop* c-dy) (not (zerop* c-dx)) (not (zerop* c-d0y)))
+                     ((and (zerop* c-dy)
+                           (not (zerop* c-dx)) (not (zerop* c-d0y)))
                       (push c-d0 ret)
                       (setf c-d0 c-dxyz))
                      (t
@@ -138,7 +140,6 @@
                       (push c-dxyz ret)))))))
     (nreverse ret)))
                                                  
-
 (defun optimize-relative-distances (path-dxyz &optional (eps 0.001))
   "Accumulate marginal and unidirectional movements."
   (let ((c-d0 nil)
@@ -223,9 +224,9 @@
         (ret nil))
     (dotimes (i nz)
       (when (> i 0)
-        (dolist (c1-c2- p2)
-        (dolist (dxyz-c1-c2 (convert-dxyz c1-c2- i dz nz nt))
-          (push dxyz-c1-c2 ret)))))
+        (dolist (p-c1-c2 p2)
+          (dolist (dxyz-c1-c2 (convert-dxyz p-c1-c2 i dz nz nt))
+            (push dxyz-c1-c2 ret)))))
     (nreverse ret)))
 
 (defun convert-path-dxyz (path tags w/2 dz nz
@@ -233,6 +234,29 @@
   "Convert a PATH with TAGS into optimized relative distances ((DX . DY) . DZ)."
   (declare (ignore eps))
   (optimize-xy (convert-path-dxyz% path tags w/2 dz nz nt)))
+
+(defun emitt-gcode-xy-z (path f &optional (fz (* 0.8 f)) (v 3))
+  (let ((ret nil))
+    (dotimes (i (length path))
+      (let* ((gc "")
+             (c0 (nth i path))
+             (c0-x (caar c0))
+             (c0-y (cdar c0))
+             (c0-z (cdr c0) )
+             (c-z (when (> i 0) (cdr (nth (1- i) path))))
+             (c-2z (when (> i 1) (cdr (nth (- i 2) path))))
+             (c+z (cdr (nth (1+ i) path))))
+        (cond ((and (> i 1) (zerop* c-2z) (zerop* (- c0-z c-z)))
+               (setf gc (format nil "~aZ~v$F~v$" gc v c0-z v f)))
+              ((and c+z (zerop* (+ c0-z c+z)) (< c+z 0.))
+               (setf gc (format nil "~aZ~v$F~v$" gc v c0-z v fz)))
+              (t nil))
+        
+        (unless (zerop* c0-y) (setf gc (format nil "Y~v$~a" v c0-y gc)))
+        (unless (zerop* c0-x) (setf gc (format nil "X~v$~a" v c0-x gc)))
+
+        (push (format nil "G0~a" gc) ret)))
+    (nreverse ret)))
 
 #|
 (defun emitt-gcode-tagged-path
@@ -255,7 +279,7 @@
                      path)))
 |#
 
-(defun c2-c1- (c1-c2) (c- (cdr c1-c2) (car c1-c2)))
+
 
 #|
  (mapcar #'add-z g2-path)
