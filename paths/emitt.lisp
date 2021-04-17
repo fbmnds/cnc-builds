@@ -86,7 +86,7 @@
       (nreverse ret))))
 
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
-  "Convert a tagged path segment into relative distances."
+  "Convert a un-/tagged path segment into relative distances."
   (let* ((tag-p (eql :tag (car c1-c2)))
          (c-dz (round* (* i dz)))
          (c1-c2 (if tag-p (c2-c1- (cdr c1-c2)) (c2-c1- c1-c2)))
@@ -224,6 +224,7 @@
         (ret nil))
     (dotimes (i nz)
       (when (> i 0)
+        (push (cons (cons 0. 0.) dz) ret)
         (dolist (p-c1-c2 p2)
           (dolist (dxyz-c1-c2 (convert-dxyz p-c1-c2 i dz nz nt))
             (push dxyz-c1-c2 ret)))))
