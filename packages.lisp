@@ -4,6 +4,11 @@
   (:export #:*precision*
            #:round*
            #:zerop*
+           #:xy-p
+           #:xyz-p
+           #:coord
+           #:coord-xy
+           #:coord-xyz
            #:c-x
            #:c-y
            #:c-z
@@ -48,7 +53,8 @@
             #:insert-tags
             #:convert-dxyz
             #:optimize-relative-distances
-            #:convert-path-dxyz))
+            #:convert-path-dxyz
+            #:emitt-gcode-xy-z))
 
 (defpackage #:paths/box
   (:use #:cl)
