@@ -85,6 +85,86 @@
       (dolist (c1-c2 p2) (push-it c1-c2))
       (nreverse ret))))
 
+(defun close-grouped-path (path)
+  "Close the PATH of pairs using NCONC, if necessary."
+  (let* ((len (length path))
+         (first-c1 (caar path))
+         (last-c1-c2 (nth (- len 1) path)))
+    (if (c1-c2=  first-c1 (cdr last-c1-c2))
+        path
+        (nconc path (list (cons (cdr last-c1-c2) first-c1))))))
+
+(defun close-path (path)
+  "Close the PATH, if necessary."
+  (if (member (first path) (last path) :test #'c=)
+      path
+      (let ((p2 (reverse path))) (nreverse (push (first path) p2)))))
+
+(defun tag-path (path tags)
+  "Tag the PATH elements TAGS where tags will be inserted."
+  (let ((p2 (group-2 path))
+        (ret nil))
+    (labels ((c1c2= (s1 s2)
+               (destructuring-bind ((a1 . b1) . (c1 . d1)) s1
+                 (destructuring-bind ((a2 . b2) . (c2 . d2)) s2
+                   (and (= a1 a2) (= b1 b2) (= c1 c2) (= d1 d2)))))
+             (push-it (c1-c2)
+               (if (member c1-c2 tags :test #'c1c2=)
+                   (push (cons :tag c1-c2) ret)
+                   (push c1-c2 ret))))
+      (dolist (c1-c2 p2) (push-it c1-c2))
+      (nreverse ret))))
+
+(defun expand-path (path tags w/2 dz nz &optional (nz-pass 0))
+  "Expand the PATH into a VECTOR of absolute XYZ coordinates, inserting 
+tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
+  (let* ((path (tag-path (close-path path) tags))
+         (l-path (length path))
+         (l-tags (length tags))
+         (l-vec (* 3 (+ 1 (* nz (+ l-path (* l-tags 4 (- nz nz-pass)))))))
+         (v (make-array l-vec :element-type 'float))
+         (i 0))
+    (flet ((c1-+w/2 (c1-c2 w/2)
+             (let ((c1 (car c1-c2))
+                   (len-c1-c2/2 (/ (euklid (c2-c1- c1-c2)) 2.0))
+                   (c1-c2-normed (c-normed (c2-c1- c1-c2))))
+               (cons (c+ c1 (c* (- len-c1-c2/2 w/2) c1-c2-normed))
+                     (c+ c1 (c* (+ len-c1-c2/2 w/2) c1-c2-normed)))))
+           (set-coord (v i x y z)
+             (setf (aref v i) x)
+             (setf (aref v (1+ i)) y)
+             (setf (aref v (+ i 2)) z)))
+      (set-coord v 0 (caaar path) (cdaar path) 0.)
+      (dotimes (iz0 nz)
+        (dotimes (ip l-path)
+          (setf i (+ 3 i))
+          (let* ((path.ip (nth ip path))
+                 (iz (1+ iz0))
+                 (izdz (* iz dz)))
+            (if (eql :tag (car path.ip))
+                (let* ((c1-c2 (cdr path.ip))
+                       (c1 (car c1-c2)))
+                  (set-coord v i (car c1) (cdr c1) izdz)
+                  (when (> iz nz-pass)
+                    (print c1-c2)
+                    (print (c2-c1- c1-c2))
+                    (print (/ (euklid (c2-c1- c1-c2)) 2.0))
+                    (print (c-normed (c2-c1- c1-c2)))
+                    (print (c1-+w/2 c1-c2 w/2))
+                    (destructuring-bind ((c1-w-x . c1-w-y) . (c1+w-x . c1+w-y))
+                        (c1-+w/2 c1-c2 w/2)
+                      (setf i (+ 3 i))
+                      (set-coord v i c1-w-x c1-w-y izdz)
+                      (setf i (+ 3 i))
+                      (set-coord v i c1-w-x c1-w-y (* nz-pass dz))
+                      (setf i (+ 3 i))
+                      (set-coord v i c1+w-x c1+w-y (* nz-pass dz))
+                      (setf i (+ 3 i))
+                      (set-coord v i c1+w-x c1+w-y izdz))))
+                (progn
+                  (set-coord v i (caar path.ip) (cdar path.ip) izdz)))))))
+    v))
+
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
   "Convert a un-/tagged path segment into relative distances."
   (let* ((tag-p (eql :tag (car c1-c2)))
