@@ -55,7 +55,10 @@
             #:optimize-relative-distances
             #:convert-path-dxyz
             #:convert-path-dxyz%
-            #:emitt-gcode-xy-z))
+            #:emitt-gcode-xy-z
+            #:close-path
+            #:tag-path
+            #:expand-path))
 
 (defpackage #:paths/box
   (:use #:cl)
