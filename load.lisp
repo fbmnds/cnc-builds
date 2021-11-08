@@ -23,3 +23,20 @@
   (dolist (ln (emitt-gcode-xy-z
                (convert-path-dxyz% path tags 1. -1. 5) -0.5 1200))
     (format f "~a~%" ln)))
+
+
+(with-open-file (f "~/projects/relays-ui/assets/data.csv"
+                   :direction :output :if-exists :overwrite)
+  (let ((i 0))
+    (multiple-value-bind (v l-vec)
+        (expand-path (car paths/box-tests::tbox)
+                     '(((0 . 8.5) . (2.5 . 8.5))) 2 -0.5 5 2)
+      (do ()
+          ((= i l-vec))
+        (if (> i 0)
+            (format f "~%~3$;~3$;~3$"
+                    (aref v i) (aref v (1+ i)) (aref v (+ i 2)))
+            (format f "~3$;~3$;~3$"
+                    (aref v i) (aref v (1+ i)) (aref v (+ i 2))))
+        (setf i (+ i 3))))))
+
