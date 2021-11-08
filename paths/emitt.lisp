@@ -134,7 +134,9 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
              (setf (aref v i) x)
              (setf (aref v (1+ i)) y)
              (setf (aref v (+ i 2)) z)))
-      (set-coord v 0 (caaar path) (cdaar path) 0.)
+      (if (eql :tag (caar path))
+          (set-coord v 0 (caadar path) (cdadar path) 0.)
+          (set-coord v 0 (caaar path) (cdaar path) 0.))
       (dotimes (iz0 nz)
         (dotimes (ip l-path)
           (setf i (+ 3 i))
@@ -158,7 +160,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                       (set-coord v i c1+w-x c1+w-y izdz))))
                 (progn
                   (set-coord v i (caar path.ip) (cdar path.ip) izdz)))))))
-    v))
+    (values v (+ i 3))))
 
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
   "Convert a un-/tagged path segment into relative distances."
