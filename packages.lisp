@@ -58,6 +58,9 @@
             #:convert-path-dxyz%
             #:emitt-gcode-xy-z
             #:close-path
+            #:optimize-path
+            #:segments-by-length
+            #:inner-ticks
             #:tag-path
             #:expand-path))
 

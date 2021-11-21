@@ -140,8 +140,9 @@
         path)))
 
 (defun inner-ticks (r path)
-  "Add ticks to inner corners to PATH."
-  (let* ((c0 (car path))
+  "Add ticks to inner corners sized for radius R to the closed PATH."
+  (let* ((path (close-path path))
+         (c0 (car path))
          (c1 (cadr path))
          (p (list c0))
          (dr (* (- (sqrt 2) 1) r)))
@@ -149,10 +150,8 @@
         (labels ((rec (rpath)
                    (let ((c2 (cadr rpath)))
                      (push c1 p)
-                     ;;(break)
                      (if c2
                          (progn
-                           ;;(break)
                            (when (> (det2 (c- c2 c1) (c- c1 c0)) 0)
                              (push (c+ c1
                                        (c* dr (c-normed (c+ (normale-+ c2 c1)
@@ -163,6 +162,13 @@
                            (setf c1 c2)
                            (rec (cdr rpath)))
                          (progn
+                           (setf c2 (cadr path))
+                           (when (> (det2 (c- c2 c1) (c- c1 c0)) 0)
+                             (push (c+ c1
+                                       (c* dr (c-normed (c+ (normale-+ c2 c1)
+                                                            (normale-+ c1 c0)))))
+                                   p)
+                             (push c1 p))
                            (nreverse p))))))
           (rec (cdr path)))
         path)))
