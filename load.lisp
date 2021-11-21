@@ -55,8 +55,8 @@
 
 (with-open-file (f "~/projects/relays-ui/assets/data.csv"
                    :direction :output :if-exists :supersede)
-  (let* ((path (optimize-path (car paths/box-tests::tbox)))
-         (tags (take-n-segments 4 (segments-by-length path)))
+  (let* ((path (inner-ticks 1.5 (optimize-path (car paths/box-tests::tbox))))
+         (tags (subseq (segments-by-length path) 0 4))
          (i 0))
     (multiple-value-bind (v l-vec)
         (expand-path path tags 2 -1.5 5 2)
