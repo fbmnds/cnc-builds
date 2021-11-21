@@ -115,6 +115,48 @@
       (dolist (c1-c2 p2) (push-it c1-c2))
       (nreverse ret))))
 
+(defun optimize-path (path &optional (eps 0.001))
+  "Merge consecutive PATH segments recursively, iff they are collinear."
+  (let ((c0 (car path))
+        (c1 (cadr path))
+        p)
+    (if (and c0 c1)
+        (labels ((rec (rpath)
+                   (let ((c2 (car rpath)))
+                     (if c2
+                         (progn
+                           (if (collinear-2d c0 c1 c2)
+                               (setf c1 c2)
+                               (progn
+                                 (push c0 p)
+                                 (setf c0 c1)
+                                 (setf c1 c2)))
+                           (rec (cdr rpath)))
+                         (progn
+                           (push c0 p)
+                           (push c1 p)
+                           (nreverse p))))))
+          (rec (cddr path)))
+        path)))
+
+(defun segments-by-length (path)
+  "Sort the segments of the copied PATH by length."
+  (let ((p2 (group-2 (copy-list path))))
+    (sort p2 #'(lambda (c1c2 c3c4)
+                          (> (euklid (c- (car c1c2) (cdr c1c2)))
+                             (euklid (c- (car c3c4) (cdr c3c4))))))))
+
+(defun take-n-segments (n segments)
+  "Take N segments from the SEGMENTS list."
+  (let (ss)
+    (labels ((rec (i s)
+               (if (> i 0)
+                   (progn
+                     (push (car s) ss)
+                     (rec (1- i) (cdr s)))
+                   (nreverse ss))))
+      (rec n segments))))
+
 (defun expand-path (path tags w/2 dz nz &optional (nz-pass 0))
   "Expand the PATH into a VECTOR of absolute XYZ coordinates, inserting 
 tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."

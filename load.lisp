@@ -53,3 +53,17 @@
                     (aref v i) (aref v (1+ i)) (aref v (+ i 2)))
         (setf i (+ i 3))))))
 
+(with-open-file (f "~/projects/relays-ui/assets/data.csv"
+                   :direction :output :if-exists :supersede)
+  (let* ((path (optimize-path (car paths/box-tests::tbox)))
+         (tags (take-n-segments 4 (segments-by-length path)))
+         (i 0))
+    (multiple-value-bind (v l-vec)
+        (expand-path path tags 2 -1.5 5 2)
+      (do ()
+          ((= i l-vec))
+        (format f "~3$;~3$;~3$~%"
+                (aref v i) (aref v (1+ i)) (aref v (+ i 2)))
+        (setf i (+ i 3))))))
+
+

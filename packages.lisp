@@ -26,6 +26,7 @@
            #:normale-+
            #:normale--
            #:det2
+           #:collinear-2d
            #:shift-corner-+
            #:shift-corner--
            #:shift-path-+
