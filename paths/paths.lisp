@@ -161,6 +161,19 @@
 
 (defun det2 (c1 c2) (round* (- (* (c-x c1) (c-y c2)) (* (c-x c2) (c-y c1)))))
 
+(defun collinear-2d (c0 c1 c2 &optional (eps 0.00001))
+  "Return the segment (C0 . C2), iff the points C0, C1 and C2 are collinear."
+  (let ((x1 (car c0))
+        (y1 (cdr c0))
+        (x2 (car c1))
+        (y2 (cdr c1))
+        (x3 (car c2))
+        (y3 (cdr c2)))
+    (when (> eps (abs (+ (* x1 (- y2 y3))
+                         (* x2 (- y3 y1))
+                         (* x3 (- y1 y2)))))
+      (cons c0 c2))))
+
 ;; M = a b
 ;;     c d
 ;; det2 M = ad - cb
