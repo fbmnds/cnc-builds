@@ -88,14 +88,14 @@
   (display-window w))
 
 (defmethod glut:reshape ((w window) width height)
-  (let ((ar (/ width (1+ height))))
-    (cond ((> ar *aspect-ratio*)
-           (setf *width* (* height ar))
+  (let ((ar (/ width (max 1 height))))
+    (cond ((< ar *aspect-ratio*)
+           (setf *width* (round (* height ar)))
            (setf *height* height)
            (display-window w))
           ((> ar *aspect-ratio*)
            (setf *width* width)
-           (setf *height* (/ *width* ar))
+           (setf *height* (round (/ *width* ar)))
            (display-window w))
           (t nil))))
 
