@@ -310,7 +310,12 @@
     (paths/view:colored-multi-view
      (list (cons :white p4)
            (cons :green
-                 (paths/emitt:inner-ticks 5 (paths:shift-path-- 5 p4)))))))
+                 (paths/emitt:inner-ticks 5 (paths:shift-path-- 5 p4))))))
+  (paths/view:view
+   (append (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                   (spiral 01 (cons 50 0) (cons 60 0)))
+           (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                   (spiral 01 (cons 40 0) (cons 50 0)))) 120 120))
 
 
 

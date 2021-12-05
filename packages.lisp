@@ -40,7 +40,15 @@
            #:radius-center-in-corner
            #:min-xy-path
            #:flip-path
-           #:shift-path-origin))
+           #:shift-path-origin
+           #:rad->deg
+           #:deg->rad
+           #:polar->cartesian
+           #:cartesian->polar
+           #:radian
+           #:n-d-polar
+           #:spiral-polar
+           #:spiral))
 
 (defpackage #:paths/emitt
   (:use #:cl #:paths)

@@ -317,3 +317,52 @@
                                       ;
 |#
 
+(defun deg->rad (x) (* x (/ pi 180)))
+
+(defun rad->deg (x) (* x (/ 180 pi)))
+
+(defun polar->cartesian (c)
+  (destructuring-bind (r . alfa) c (c* r (cons (cos alfa) (sin alfa)))))
+
+(defun cartesian->polar (c &optional (eps 0.00001))
+  (destructuring-bind (x . y) c
+    (let ((r (sqrt (+ (* x x) (* y y)))))
+      (if (> eps r)
+          (cons 0 0)
+          (cons r (mod (asin (/ y r)) (* 2 pi)))))))
+
+(defun radian (s0-polar s1-polar &optional (eps 0.00001))
+  (assert (> eps 0))
+  (destructuring-bind (r0 . alfa0) s0-polar
+    (destructuring-bind (r1 . alfa1) s1-polar
+      (let ((r-avg (/ (+ r1 r0) 2))
+            (dalfa (mod (- alfa1 alfa0) (* 2 pi))))
+        (cond ((> dalfa eps) (* dalfa r-avg))
+              ((< dalfa (* -1 eps)) (* dalfa r-avg))
+              (t (* 2 pi r-avg)))))))
+
+(defun n-d-polar (dxy s0-polar s1-polar &optional (eps 0.00001))
+  (destructuring-bind (r0 . alfa0) s0-polar
+    (destructuring-bind (r1 . alfa1) s1-polar
+      (let ((n (round (/ (radian s0-polar s1-polar eps) dxy)))
+            (dalfa (mod (- alfa1 alfa0) (* 2 pi))))
+        (if (> eps dalfa)
+            (cons n (cons (/ (- r1 r0) n) (/ (* 2 pi) n)))
+            (cons n (cons (/ (- r1 r0) n) (/ dalfa n))))))))
+
+(defun spiral-polar (dxy s0-polar s1-polar &optional (eps 0.00001))
+  (destructuring-bind (r0 . alfa0) s0-polar
+    (destructuring-bind (n . (dr . dalfa)) (n-d-polar dxy s0-polar s1-polar eps)
+      (let ((spiral '()))
+        (dotimes (i n)
+          (push (cons (+ (* i dr) r0) (+ (* i dalfa) alfa0)) spiral))
+        (push s1-polar spiral)
+        (nreverse spiral)))))
+
+(defun spiral (dxy s0 s1 &optional (eps 0.00001))
+  (let ((s0-polar ( cartesian->polar s0))
+        (s1-polar ( cartesian->polar s1)))
+    (mapcar #'polar->cartesian
+            (spiral-polar dxy s0-polar s1-polar eps))))
+
+
