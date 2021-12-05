@@ -365,4 +365,8 @@
     (mapcar #'polar->cartesian
             (spiral-polar dxy s0-polar s1-polar eps))))
 
+(defun closed-spiral (dxy s0 s1 &optional (eps 0.00001))
+  (nconc (spiral dxy s0 s1 eps)
+         (spiral dxy s1 s1 eps)))
+
 

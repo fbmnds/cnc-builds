@@ -312,10 +312,18 @@
            (cons :green
                  (paths/emitt:inner-ticks 5 (paths:shift-path-- 5 p4))))))
   (paths/view:view
-   (append (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                   (spiral 01 (cons 50 0) (cons 60 0)))
-           (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                   (spiral 01 (cons 40 0) (cons 50 0)))) 120 120))
+   (nconc (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                  (closed-spiral 01 (cons 50 0) (cons 60 0)))
+          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                  (spiral 01 (cons 50 0) (cons 60 0)))
+          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                  (spiral 01 (cons 40 0) (cons 50 0)))
+          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                  (spiral 01 (cons 30 0) (cons 40 0)))
+          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                  (spiral 01 (cons 20 0) (cons 30 0)))
+          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                  (spiral 01 (cons 0 0) (cons 20 0)))) 120 120))
 
 
 
