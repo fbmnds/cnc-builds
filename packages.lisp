@@ -48,7 +48,8 @@
            #:radian
            #:n-d-polar
            #:spiral-polar
-           #:spiral))
+           #:spiral
+           #:closed-spiral))
 
 (defpackage #:paths/emitt
   (:use #:cl #:paths)
