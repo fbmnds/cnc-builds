@@ -323,7 +323,11 @@
           (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
                   (spiral 01 (cons 20 0) (cons 30 0)))
           (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (spiral 01 (cons 0 0) (cons 20 0)))) 120 120))
+                  (spiral 01 (cons 0 0) (cons 20 0)))) 120 120)
+  (paths/view:view
+   (mapcar #'(lambda (c) (c* 100 c))
+           (cadr (fill-inner-rectangle 0.1 '((0 . 0) (1 . 0) (1 . 1) (0 . 1)))))
+   110 110))
 
 
 
