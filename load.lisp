@@ -60,7 +60,7 @@
              (optimize-path
               (shift-path-- r
                             (car paths/box-tests::tbox)))))
-         (path (paths/emitt:inner-ticks r p))
+         (path (inner-ticks r p))
          (tags (subseq (segments-by-length path) 0 4))
          (i 0))
     (multiple-value-bind (v l-vec)

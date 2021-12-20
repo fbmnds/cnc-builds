@@ -227,6 +227,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                   (set-coord v i (caar path.ip) (cdar path.ip) izdz)))))))
     (values v (+ i 3))))
 
+;; deprecated
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
   "Convert a un-/tagged path segment into relative distances."
   (let* ((tag-p (eql :tag (car c1-c2)))
@@ -240,6 +241,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
               (cons (cons 0. 0.) c-dz))
         (list (cons (cons c-dx c-dy) 0.)))))
 
+;; deprecated
 (defun optimize-xy (path-dxyz)
   "Accumulate unidirectional X and Y movements, separately."
   (let ((c-d0 nil)
@@ -281,7 +283,8 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                       (setf c-d0 nil)
                       (push c-dxyz ret)))))))
     (nreverse ret)))
-                                                 
+
+;; deprecated
 (defun optimize-relative-distances (path-dxyz &optional (eps 0.001))
   "Accumulate marginal and unidirectional movements."
   (let ((c-d0 nil)
@@ -360,6 +363,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
     (when c-d0 (push (c+ c-d0 c-d*) ret))
     (reverse ret)))
 
+;; deprecated
 (defun convert-path-dxyz% (path tags w/2 dz nz &optional (nt (/ nz 2)))
   "Convert a PATH with TAGS into relative distances ((DX . DY) . DZ)."
   (let ((p2 (insert-tags path tags w/2))
@@ -372,12 +376,14 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
             (push dxyz-c1-c2 ret)))))
     (nreverse ret)))
 
+;; deprecated
 (defun convert-path-dxyz (path tags w/2 dz nz
                           &optional (nt (/ nz 2)) (eps 0.001))
   "Convert a PATH with TAGS into optimized relative distances ((DX . DY) . DZ)."
   (declare (ignore eps))
   (optimize-xy (convert-path-dxyz% path tags w/2 dz nz nt)))
 
+;; deprecated
 (defun emitt-gcode-xy-z (path dz f &optional (fz (* 0.8 f)) (v 3))
   (let ((c0-z (c-z (car path)))
         (ret nil))
@@ -409,50 +415,4 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                     (push gc ret)))))))
     (nreverse ret)))
 
-#|
-(defun emitt-gcode-tagged-path
-    (path tags nz &optional (nt (/ nz 2)) (v 3) (eps 0.001))
-  (remove-if #'null
-             (mapcar #'(lambda (c1-c2)
-                         (if (eql :tag (car c1-c2))
-                             (let ((c1-c2 (cdr c1-c2)))
-                               nil)
-                             (let ((c-dx (- (cadr c1-c2) (caar c1-c2)))
-                                   (c-dy (- (cddr c1-c2) (cdar c1-c2))))
-                               (cond ((and (< eps (abs c-dx))
-                                           (< eps (abs c-dy)))
-                                      (format nil "G01 X~v$Y~v$" v c-dx v c-dy))
-                                     ((< eps (abs c-dx))
-                                      (format nil "G01 X~v$" v c-dx))
-                                     ((< eps (abs c-dy))
-                                      (format nil "G01 Y~v$" v c-dy))
-                                     (t nil)))))
-                     path)))
-|#
-
-
-
-#|
- (mapcar #'add-z g2-path)
-
-add-z:
-- untagged: (cons (c2-c1- c1-c2) (* i dz))
-- tagged:  (if (< i (- nz nt))
-              (cons (c2-c1- c1-c2) (* i dz))
-              (list 
-                ;; 
-                (cons (c2-c1- c1-c2) 0.) ; -w/2
-                ...)
-
-
-(defun emitt-gcode-grouped-path
-    (g2-path f dz nz &optional (nt (/ nz 2)) (fz f) (v 3) (eps 0.001))
-  (let* ((gc-path (emitt-gcode-path path v eps))
-         (gc-z (format nil "G01 Z~v$ F~v$" v dz v fz))
-         (gc-f (format nil "~a F~v$" (car gc-path) v f))
-         (gcode nil))
-    (dotimes (i nz) (push (append (list gc-z gc-f) (cdr gc-path)) gcode))
-    (apply #'append gcode)))
-
-|#
  
