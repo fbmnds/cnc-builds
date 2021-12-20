@@ -49,7 +49,8 @@
            #:n-d-polar
            #:spiral-polar
            #:spiral
-           #:closed-spiral))
+           #:closed-spiral
+           #:while))
 
 (defpackage #:paths/emitt
   (:use #:cl #:paths)
@@ -71,7 +72,10 @@
             #:segments-by-length
             #:inner-ticks
             #:tag-path
-            #:expand-path))
+            #:expand-path
+            #:geometric-center
+            #:inner-rectangle
+            #:fill-inner-rectangle))
 
 (defpackage #:paths/box
   (:use #:cl)

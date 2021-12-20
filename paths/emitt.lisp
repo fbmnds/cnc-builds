@@ -227,6 +227,40 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                   (set-coord v i (caar path.ip) (cdar path.ip) izdz)))))))
     (values v (+ i 3))))
 
+(defun geometric-center (p)
+  "Calculate the geometric center of PATH p."
+  (let ((c-x 0) (c-y 0) (len 0)
+        (p2 (remove-duplicates p :test #'c=)))
+    (dolist (c p2)
+      (destructuring-bind (x . y) c
+        (incf len)
+        (setf c-x (+ c-x x))
+        (setf c-y (+ c-y y))))
+    (values (when (> len 0) (cons (/ c-x len) (/ c-y len))) len)))
+
+(defun inner-rectangle (dr rect &optional center)
+  "Calculate the inner rectangle of RECT with distance DR towards the geometric CENTER."
+  (let ((center (or center (geometric-center rect))))
+    (list center
+          (mapcar #'(lambda (c) (c+ c (c* dr (c-normed (c- center c))))) rect))))
+
+(defun fill-inner-rectangle (r rect)
+  "Fill RECT with a sequence of inner rectangle paths with distance R."
+  (let* ((center (geometric-center rect))         
+         (dr (* (sqrt 2) r))
+         (dmax (apply #'max
+                      (mapcar #'(lambda (c) (euklid (c- center c))) rect)))
+         (prev (close-path (copy-list rect)))
+         (p (list prev)))
+    (while (> dmax 0)
+      (setf prev (cadr (inner-rectangle dr prev center)))
+      (setf dmax (- (apply #'max
+                           (mapcar #'(lambda (c) (euklid (c- center c))) prev))
+                    dr))
+      (push prev p))
+    (push (list center) p)
+    (list center (apply #'nconc p))))
+
 ;; deprecated
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
   "Convert a un-/tagged path segment into relative distances."
