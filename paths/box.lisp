@@ -113,15 +113,21 @@
 (defmacro eql_d-3 (l1 l2) `(eql-l 0.001 ,l1 ,l2))
 
 (defun choose (c1 c2)
+  "Choose the XY-coordinate C1 or C2 according to which is lower-left."
   (cond ((< (car c1) (car c2)) c1)
         ((> (car c1) (car c2)) c2)
         (t (if (< (cdr c1) (cdr c2)) c1 c2))))
 
 (defun find-lower-left-corner (l)
+  "Return the XY-coordinate of the lowerst left corner in path L."
   (unless (endp l)
     (reduce #'choose l :initial-value (car l))))
 
 (defun shift-to-llc (l)
+  "Shift path L such that the lower left corner in L is the first coordinate.
+
+Purpose of the function is to arrange  path L such that the start point for
+machining is close to the origin which is supposed to be located lower left."
   (unless (endp l)
     (if (cdr l)
         (let ((pos (position (find-lower-left-corner l) l)))
@@ -129,6 +135,7 @@
         l)))
 
 (defun box (lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d)
+  "Return the faces of a fingerjointed box aligned in the upper right XY-quadrant."
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-1 (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-2 (box-var-outer-2 lx lz d1-ac d2-ac d1-bd d2-bd dy))
@@ -144,6 +151,8 @@
      (shift-x (+ (* 2 spacer-x) spacer-z) (flip-45 outer-box-1)))))
 
 (defun box-cut-z (h lx ly lz d1-ac d2-ac d1-bd d2-bd dy spacer-d)
+  "Return the faces of a fingerjointed box, which is cut at height H,
+aligned in the upper right XY-quadrant."
   (let ((inner-box (box-var-inner lx ly d1-ac d2-ac d1-bd d2-bd dy))
         (outer-box-1
           (cut-ac h (box-var-outer-1 ly lz d1-ac d2-ac d1-bd d2-bd dy)))
