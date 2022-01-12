@@ -160,7 +160,7 @@ coordinate tuples for further processing."
     (t (error (format nil "euklid undefined for ~a" c)))))
 
 (defun c= (c1 c2)
-  "Return numerical equality for numbers, XY-/XYZ-coordinates and lists thereof."
+  "Return numerical equality for numbers, XY-/XYZ-coordinates and paths."
   (cond ((and (numberp c1) (numberp c2))
          (> *precision* (abs (- c1 c2))))
         ((and (typep c1 'coord) (typep c2 'coord))
@@ -169,24 +169,32 @@ coordinate tuples for further processing."
          (every #'identity (mapcar #'c= c1 c2)))
         (t (error (format nil "c= undefined for ~a ~a" c1 c2)))))
 
-(defun c1-c2= (s1 s2) (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
+(defun c1-c2= (s1 s2)
+  "Return numerical equality for XY-/XYZ path segments."
+  (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
 
 (defun c-normed (c)
+  "Return the normed vector of the XY-/XYZ-coordinate C."
   (typecase c
-    (coord-xy (c* (/ 1. (euklid c)) c))
+    (coord (c* (/ 1. (euklid c)) c))
     (t (error (format nil "c-normed undefined for ~a" c)))))
 
 (defun normale-+ (c1 c2)
+  "Return the positive oriented normale of the XY-/XYZ path segment C1 - C2."
   (let ((d (c-normed (c- c1 c2))))
     (cond ((c= c1 c2) (error "undefined normale on zero vector"))
           (t (round* (cons (* -1.0 (c-y d)) (c-x d)))))))
 
-(defun normale-- (c1 c2) (c* -1.0 (normale-+ c1 c2)))
+(defun normale-- (c1 c2)
+  "Return the negative oriented normale of the XY-/XYZ path segment C1 - C2."
+  (c* -1.0 (normale-+ c1 c2)))
 
-(defun det2 (c1 c2) (round* (- (* (c-x c1) (c-y c2)) (* (c-x c2) (c-y c1)))))
+(defun det2 (c1 c2)
+  "Return the determinante of the XY-coordinates C1 and C2."
+  (round* (- (* (c-x c1) (c-y c2)) (* (c-x c2) (c-y c1)))))
 
 (defun collinear-2d (c0 c1 c2 &optional (eps 0.00001))
-  "Return the segment (C0 . C2), iff the points C0, C1 and C2 are collinear."
+  "Return the segment (C0 . C2), iff the XY-coordinates C0, C1 and C2 are collinear."
   (let ((x1 (car c0))
         (y1 (cdr c0))
         (x2 (car c1))
@@ -231,6 +239,11 @@ coordinate tuples for further processing."
 |#
 
 (defun shift-corner-+ (r c1 c2 c3)
+  "Return the coordinate of the inner XY point with distance R
+to both path segments C1 C2 and C2 C3. The distance to the corner C1 C2 C3
+is (* SQRT 2 R), iff the segments are perpendicular to each other.
+
+Example: (shift-corner-+ 1. '(0 . 0) '(1 . 0) '(1 . 1)) => (0.0 . 1.0)"
   (let* ((n1 (normale-+ c2 c1))
          (n2 (normale-+ c3 c2))
          (c-1-2 (c- c1 c2))
@@ -241,6 +254,11 @@ coordinate tuples for further processing."
     (c+ (c* r n1) (c- c2 (c* l c-1-2)))))
 
 (defun shift-corner-- (r c1 c2 c3)
+  "Return the coordinate of the outer XY point with distance R
+to both path segments C1 C2 and C2 C3. The distance to the corner C1 C2 C3
+is (* SQRT 2 R), iff the segments are perpendicular to each other.
+
+Example: (shift-corner-+ 1. '(0 . 0) '(1 . 0) '(1 . 1)) => (0.0 . 1.0)"
   (let* ((n1 (normale-- c2 c1))
          (n2 (normale-- c3 c2))
          (c-1-2 (c- c1 c2))
@@ -251,10 +269,13 @@ coordinate tuples for further processing."
     (c+ (c* r n1) (c- c2 (c* l c-1-2)))))
 
 (defun in-row-p (c)
+  "Return T iff either the X or the Y coordinates are numerically equal for the first
+three coordinates of the path C."
   (ignore-errors (or (= (caar c) (caadr c) (caaddr c))
                      (= (cdar c) (cdadr c) (cdaddr c)))))
 
 (defun stats (p)
+  "Return min-max-length-statistics for the path P of XY-coordinates."
   (loop for c in p
         counting c into len
         maximizing (car c) into max-x
@@ -266,6 +287,8 @@ coordinate tuples for further processing."
                       :max-y max-y :min-y min-y))))
 
 (defun stats-acc (ps)
+  "Return the list of min-max-length-statistics for the list of paths PS
+of XY-coordinates."
   (loop for s in (mapcar #'stats ps)
         summing (nth 1 s) into len
         maximizing (nth 3 s) into max-x
@@ -277,6 +300,8 @@ coordinate tuples for further processing."
                       :max-y max-y :min-y min-y))))
 
 (defun trim-path (p &optional (len (length p)))
+  "Deduplicate the XY-path P and reduce path segments which are in row with
+regard to either the X- or Y-coordinate."
   (labels ((not-dup (j)
              (cond ((zerop j))
                    (t (not (c= (nth (1- j) p) (nth j p))))))
