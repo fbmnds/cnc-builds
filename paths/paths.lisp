@@ -300,7 +300,7 @@ of XY-coordinates."
                       :max-y max-y :min-y min-y))))
 
 (defun trim-path (p &optional (len (length p)))
-  "Deduplicate the XY-path P and reduce path segments which are in row with
+  "Deduplicate the XY-path P and reduce those path segments which are in row with
 regard to either the X- or Y-coordinate."
   (labels ((not-dup (j)
              (cond ((zerop j))
@@ -317,6 +317,8 @@ regard to either the X- or Y-coordinate."
       (loop for i from 0 to len-1 when (test len-1 q i) collect (nth i q)))))
 
 (defun shift-path-+ (r l)
+  "Return the inner/outer path with distance R to the path L, depending on
+the orientation of L."
   (remove-if #'null
              (mapcar #'(lambda (c)
                          (ignore-errors
@@ -324,6 +326,8 @@ regard to either the X- or Y-coordinate."
                      (group-3 (trim-path l)))))
 
 (defun shift-path-- (r l)
+  "Return the outer/inner path with distance R to the path L, depending on
+the orientation of L."
   (remove-if #'null
              (mapcar #'(lambda (c)
                          (ignore-errors
@@ -331,18 +335,27 @@ regard to either the X- or Y-coordinate."
                      (group-3 (trim-path l)))))
 
 (defun circle-path (r n)
+  "Return the circle XY-path of N segments with radius R around the origin."
   (let ((pi2/n (/ (* 2 pi) n)))
     (loop for i from 0 to (1- n) collect (cons (* r (cos (* i pi2/n)))
                                                (* r (sin (* i pi2/n)))))))
 
 (defun min-xy-path (path)
+  "Return (MIN X) . (MIN Y) of XY-path PATH.
+
+This function is redundant to STATS."
   (reduce
    #'(lambda (c d) (cons (min (car c) (car d)) (min (cdr c) (cdr d))))
    (cdr path) :initial-value (cons (caar path) (cdar path))))
 
-(defun flip-path (path) (mapcar #'(lambda (c) (cons (cdr c) (car c))) path))
+(defun flip-path (path)
+  "Return the path of flipped YX-coordinates of PATH."
+  (mapcar #'(lambda (c) (cons (cdr c) (car c))) path))
 
 (defun shift-path-origin (path &optional (offset (cons 0. 0.)))
+  "Shift the XY-path PATH such that the origin intuitively marks the lower left corner.
+
+The returned path is aligned with the axis X=0 and Y=0 in the upper right quadrant."
   (let ((delta (min-xy-path path)))
     (mapcar #'(lambda (c) (cons (+ offset (- (car c) (car delta)))
                                 (+ offset (- (cdr c) (cdr delta)))))
@@ -391,6 +404,9 @@ regard to either the X- or Y-coordinate."
               (t (* 2 pi r-avg)))))))
 
 (defun n-d-polar (dxy s0-polar s1-polar &optional (eps 0.00001))
+  "Return the path segment increment in polar coordinates for the spiral
+around the origin from S0-POLAR to S1-POLAR. The approximation quality 
+is determined by DXY as the length of the returned path segment."
   (destructuring-bind (r0 . alfa0) s0-polar
     (destructuring-bind (r1 . alfa1) s1-polar
       (let ((n (round (/ (radian s0-polar s1-polar eps) dxy)))
@@ -400,6 +416,9 @@ regard to either the X- or Y-coordinate."
             (cons n (cons (/ (- r1 r0) n) (/ dalfa n))))))))
 
 (defun spiral-polar (dxy s0-polar s1-polar &optional (eps 0.00001))
+  "Return the path in polar coordinates for the spiral
+around the origin from S0-POLAR to S1-POLAR. The approximation quality 
+is determined by DXY as the length of the returned path segments."
   (destructuring-bind (r0 . alfa0) s0-polar
     (destructuring-bind (n . (dr . dalfa)) (n-d-polar dxy s0-polar s1-polar eps)
       (let ((spiral '()))
@@ -409,12 +428,19 @@ regard to either the X- or Y-coordinate."
         (nreverse spiral)))))
 
 (defun spiral (dxy s0 s1 &optional (eps 0.00001))
+  "Return the XY-path in cartesian coordinates for the spiral
+around the origin from cartesian S0 to cartesian S1. The approximation quality 
+is determined by DXY as the length of the returned path segments."
   (let ((s0-polar ( cartesian->polar s0))
         (s1-polar ( cartesian->polar s1)))
     (mapcar #'polar->cartesian
             (spiral-polar dxy s0-polar s1-polar eps))))
 
 (defun closed-spiral (dxy s0 s1 &optional (eps 0.00001))
+  "Return the XY-path in cartesian coordinates for the spiral
+around the origin from catesion S0 to cartesian S1 enclosed in the outer circle.
+The approximation quality is determined by DXY as the length of the returned
+path segments."
   (nconc (spiral dxy s0 s1 eps)
          (spiral dxy s1 s1 eps)))
 
