@@ -7,6 +7,14 @@
 ;; On Lisp, pp. 47, 219, 410(?)
 
 (defun group-3 (l)
+  "Group the list L in triples, wrap around the first two items.
+
+Example: (group-3 '(1 2 3)) => ((1 2 3) (2 3 1) (3 1 2))
+
+Close a path, i.e. a list of (X . Y) coordinates, with
+the first path segment attached to the end of the path.
+This allows to consider the corner around the first path point
+when calculating the inner/outer path."
   (let ((c0 (car l))
         (c1 (cadr l)))
     (labels ((rec (l acc)
@@ -23,6 +31,12 @@
       (when l (rec l nil)))))
 
 (defun group-2 (l)
+  "Group the list L in conses, wrap around the first element.
+
+Example: (group-2 '(1 2 3)) => ((1 . 2) (2 . 3) (3 . 1))
+
+Convert a path, i.e. a list coordinates, into a list of path segments, i.e. list of 
+coordinate tuples for further processing."
   (let ((head (car l)))
     (labels ((rec (l acc)
                (cond ((and (car l) (cadr l))
@@ -32,6 +46,7 @@
       (when l (rec l nil)))))
 
 (defun round* (x)
+  "Round numbers, (X .Y)- and ((X . Y) . Z)-coordinates and lists thereof."
   (cond ((numberp x) (* (round x *precision*) *precision*))
         ((and (consp x) (eql :tag (car x))) (round* (cdr x)))
         ((and (listp x) (consp (car x)) (consp (cdr x)))
@@ -80,23 +95,27 @@
 ;;;
 
 (defun c-x (c)
+  "Return X of XY- and XYZ-coordinates."
   (typecase c
     (coord-xy (round* (car c)))
     (coord-xyz (c-x (car c)))
     (t (error (format nil "c-x undefined for ~a" c)))))
 
 (defun c-y (c)
+  "Return Y of XY- and XYZ-coordinates."
   (typecase c
     (coord-xy (round* (cdr c)))
     (coord-xyz (c-y (car c)))
     (t (error (format nil "c-y undefined for ~a" c)))))
 
 (defun c-z (c)
+  "Return Z of XYZ-coordinates."
   (typecase c
     (coord-xyz (round* (cdr c)))
     (t (error (format nil "c-z undefined for ~a" c)))))
 
 (defun c- (c1 c2)
+  "Return the difference vector C1 - C2 of XY-/XYZ-coordinates."
   (cond ((and (xy-p c1) (xy-p c2))
          (cons (- (c-x c1) (c-x c2)) (- (c-y c1) (c-y c2))))
         ((and (xyz-p c1) (xyz-p c2))
@@ -106,12 +125,14 @@
         (t (error (format nil "c- undefined for ~a ~a" c1 c2)))))
 
 (defun c2-c1- (c1-c2)
+  "Return the difference vector C1 - C2 of a path segment of XY-/XYZ-coordinates."
   (if (or (and (xy-p (car c1-c2)) (xy-p (cdr c1-c2)))
           (and (xyz-p (car c1-c2)) (xyz-p (cdr c1-c2))))
       (c- (cdr c1-c2) (car c1-c2))
       (error (format nil "c2-c1- undefined for ~a" c1-c2))))
 
 (defun c+ (c1 c2)
+  "Return the sum vector C1 + C2 of XY-/XYZ-coordinates."
   (cond ((and (xy-p c1) (xy-p c2))
          (cons (+ (c-x c1) (c-x c2)) (+ (c-y c1) (c-y c2))))
         ((and (xyz-p c1) (xyz-p c2))
@@ -121,6 +142,7 @@
         (t (error (format nil "c+ undefined for ~a ~a" c1 c2)))))
 
 (defun c* (r c)
+  "Return the linear product R * C for XY-/XYZ-coordinates."
   (cond ((and (numberp r) (xy-p c))
          (cons (round* (* r (c-x c))) (round* (* r (c-y c)))))
         ((and (numberp r) (xyz-p c))
@@ -128,6 +150,7 @@
         (t (error (format nil "c* undefined for ~a ~a" r c)))))
 
 (defun euklid (c)
+  "Return the euklidian norm/length of the XY-/XYZ-coordinate C."
   (typecase c
     (coord-xy (round* (sqrt (+ (* (c-x c) (c-x c))
                                (* (c-y c) (c-y c))))))
