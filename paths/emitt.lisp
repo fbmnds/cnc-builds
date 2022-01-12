@@ -2,11 +2,13 @@
 (in-package #:paths/emitt)
 
 
+;; deprecated
 (defun emitt-scad-cons (c &optional (v 3))
   (if (endp c)
       ""
       (format nil "[~v$,~a]" v (car c) (format nil "~v$" v (cdr c)))))
 
+;; deprecated
 (defun emitt-scad (l &optional (v 3))
   (let ((l (mapcar #'(lambda (c) (emitt-scad-cons c v)) l)))
     (format nil "polygon([~a]);"
@@ -16,6 +18,7 @@
                             c2))
                     l :initial-value nil))))
 
+;; deprecated
 (defun emitt-scad-box (b &optional (v 3))
   (reduce #'(lambda (l1 l2)
               (if l1
@@ -24,6 +27,8 @@
           b :initial-value nil))
 
 (defun emitt-gcode-path (path &optional (v 3) (eps 0.001))
+  "Emitt the gcode for the XY PATH with relative positioning.
+The generated gcode does not support taps to hold the milled piece."
   (remove-if #'null
              (mapcar #'(lambda (l)
                          (let ((c-dx (- (cadr l) (caar l)))
@@ -38,6 +43,8 @@
                      (group-2 path))))
 
 (defun emitt-gcode (path f dz nz &optional (fz f) (v 3) (eps 0.001))
+  "Emitt the gcode for the XY PATH with relative positioning for NZ loops 
+with decreasing Z position in steps of DZ an feed F."
   (let* ((gc-path (emitt-gcode-path path v eps))
          (gc-z (format nil "G01 Z~v$ F~v$" v dz v fz))
          (gc-f (format nil "~a F~v$" (car gc-path) v f))
