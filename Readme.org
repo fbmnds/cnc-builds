@@ -34,9 +34,9 @@ Generated GCode is intentionally reduduced to =linear=, =incremental= segments. 
 - Ticked outline of a fingerjoint face
   [[./doc/ticked-outline.png]]
 - A closed spiral, e.g. for pockets
-  [[closed-spiral.png]]
+  [[./doc/closed-spiral.png]]
 - A filled rectangle, e.g. for surface planing
-  [[filled-rectangle.png]]
+  [[./doc/filled-rectangle.png]]
 
 ** Generate GCode
 
