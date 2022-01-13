@@ -69,14 +69,14 @@ The correctness of the generated GCode may e.g. verified with the visualizer of 
 The *TAPs* are visible e.g. right below of the yellow cone and left of the "4 mm" marking. 
 
 ** *TICK* and *TAP* combined
-*** Genereate a *XY* path with *TICKs*
+*** Generate a *XY* path with *TICKs*
 - Construct a *XY* path with ~(car paths/box-tests::tbox)~
-- Calculate the *OUTER PATH* by ~(shift-path-- r~ 
-- Remove duplicate path points and join colinear path segments ~(optimize-path~
-- Close the path ~(close-path~
-- Add the ticks ~(inner-ticks r~
+- Calculate the *OUTER PATH* for an endmill of radius *R* by ~(shift-path-- r ...)~ 
+- Remove duplicate path points and join colinear path segments ~(optimize-path ...)~
+- Close the path ~(close-path ...)~
+- Add the ticks ~(inner-ticks r ...)~
 *** Select the *TAGs*
-- Select the first longest path segments as tags ~(subseq (segments-by-length path) 0 4)~
+- Select the four longest path segments as tags ~(subseq (segments-by-length path) 0 4)~
 *** Generate the *XYZ* path
 - Combine the derived ticked *XY* path with the selected *TAGs* using ~(expand-path path tags 2 -1.5 5 2)~  
   
@@ -102,6 +102,6 @@ The *TAPs* are visible e.g. right below of the yellow cone and left of the "4 mm
 
 The resulting *XYZ* path may be visually verfied e.g. with [[https://bitbucket.org/fbmnds7/relays-ui][relays-ui]]:
 
-[[./doc/verify-expanded-XYZ-path.png]]
+[[./doc/verify-expanded-XYZ-path.gif]]
 
 
