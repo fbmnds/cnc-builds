@@ -424,7 +424,6 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
   (declare (ignore eps))
   (optimize-xy (convert-path-dxyz% path tags w/2 dz nz nt)))
 
-;; deprecated
 (defun emitt-gcode-xy-z (path dz f &optional (fz (* 0.8 f)) (v 3))
   (let ((c0-z (c-z (car path)))
         (ret nil))

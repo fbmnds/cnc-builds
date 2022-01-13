@@ -10,12 +10,8 @@
 (defparameter tags
   (remove-if #'(lambda (c) (< (euklid (c- (car c) (cdr c))) 6.)) (group-2 path)))
 
-
 (emitt-gcode-xy-z
-                    (convert-path-dxyz% path tags 1. -0.5 5)
-                    -0.5 1200)
-
-(defparameter fn "file")
+ (convert-path-dxyz% path tags 1. -0.5 5) -0.5 1200)
 
 (with-open-file (f "~/Desktop/test2.nc"
                    :direction :output :if-exists :supersede)

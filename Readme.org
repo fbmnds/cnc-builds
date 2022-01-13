@@ -1,0 +1,108 @@
+
+* CNC-Builds
+A library for 2.5D CNC.
+
+** Concepts
+- A *XY*-coordinate is represented as ~(X . Y)~.
+- A *XYZ*-coordinate is represented as ~((X . Y) . Z)~.
+- A *PATH* is a ~LIST~ of =absolute= *XY*-/*XYZ*-coordinates.
+- A *PATH SEGMENT* is a ~CONS~ of =absolute= *XY*-/*XYZ*-coordinates.
+- A *TAG* is a *PATH SEGMENT*, where a *TAP*, i.e. a path gap in *Z* direction, shall be located in the milling path.
+- A *TICK* is a tiny *PATH SEGMENT* pair that pushed forth and back into a *XY* corner.The purpose of a *TICK* is to avoid manual post-processing of a milled piece. They are currently only implemented for 90⁰ *XY* aligned corners.
+
+Generated GCode is intentionally reduduced to =linear=, =incremental= segments. Curvatures are handled by means of pre-processing with the tools of this library.
+  
+** Usage
+
+#+begin_src common-lisp
+
+  (require :asdf)
+  (asdf:load-asd "/home/dev/projects/cnc-builds/cnc-builds.asd")
+  (asdf:load-system :cnc-builds)
+
+  ;; basic regression tests
+  (paths/box-tests:run-tests)
+
+  ;; visual regression tests
+  (paths/box-tests:run-view-tests)
+
+#+end_src
+
+** Generate GCode
+
+~emitt-gcode-xy-z~ takes a list of =incremental= *XYZ* coordinates, for which the GCode is generated with speed settings *F* for *XY* and *FZ* for *Z* directions.
+
+~convert-path-dxyz%~ generates the list of =incremental= *XYZ* coordinates considering taps. Its internals do not allow for integrating *TICK*s.
+
+#+begin_src common-lisp
+
+  (in-package paths/emitt)
+
+  (defparameter path (car paths/box-tests::tbox))
+  (defparameter tags
+    (remove-if #'(lambda (c) (< (euklid (c- (car c) (cdr c))) 6.)) (group-2 path)))
+
+  (with-open-file (f "~/share/test2.nc"
+                     :direction :output :if-exists :supersede)
+    (format f "G21~%G91~%")
+    (dolist (ln (emitt-gcode-xy-z
+                 (convert-path-dxyz% path tags 1. -1. 5) -0.5 1200))
+      (format f "~a~%" ln)))
+
+#+end_src
+
+The correctness of the generated GCode may e.g. verified with the visualizer of the *Universal GCode Sender*:
+
+[[./doc/convert-path-dxyz%.png]]
+
+#+begin_src common-lisp
+
+
+  (with-open-file (f "~/projects/relays-ui/assets/data.csv"
+                     :direction :output :if-exists :overwrite)
+    (let ((i 0))
+      (multiple-value-bind (v l-vec)
+          (expand-path (car paths/box-tests::tbox)
+                       '(((0.5 . 8.5) . (2.5 . 8.5))) 2 -1.5 5 2)
+        (do ()
+            ((= i l-vec))
+          (if (> i 0)
+              (format f "~%~3$;~3$;~3$"
+                      (aref v i) (aref v (1+ i)) (aref v (+ i 2)))
+              (format f "~3$;~3$;~3$"
+                      (aref v i) (aref v (1+ i)) (aref v (+ i 2))))
+          (setf i (+ i 3))))))
+
+
+  (with-open-file (f "~/projects/relays-ui/assets/data.csv"
+                     :direction :output :if-exists :supersede)
+    (let ((i 0))
+      (multiple-value-bind (v l-vec)
+          (expand-path (car paths/box-tests::tbox)
+                       '(((2.5 . 2.5) . (10.5 . 2.5))) 2 -1.5 5 2)
+        (do ()
+            ((= i l-vec))
+          (format f "~3$;~3$;~3$~%"
+                      (aref v i) (aref v (1+ i)) (aref v (+ i 2)))
+          (setf i (+ i 3))))))
+
+  (with-open-file (f "~/projects/relays-ui/assets/data.csv"
+                     :direction :output :if-exists :supersede)
+    (let* ((r 1.5)
+           (p (close-path
+               (optimize-path
+                (shift-path-- r
+                              (car paths/box-tests::tbox)))))
+           (path (inner-ticks r p))
+           (tags (subseq (segments-by-length path) 0 4))
+           (i 0))
+      (multiple-value-bind (v l-vec)
+          (expand-path path tags 2 -1.5 5 2)
+        (do ()
+            ((= i l-vec))
+          (format f "~3$;~3$;~3$~%"
+                  (aref v i) (aref v (1+ i)) (aref v (+ i 2)))
+          (setf i (+ i 3))))))
+
+
+#+end_src
