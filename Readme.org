@@ -53,7 +53,7 @@ Generated GCode is intentionally reduduced to =linear=, =incremental= segments. 
 
 The correctness of the generated GCode may e.g. verified with the visualizer of the *Universal GCode Sender*:
 
-[[./doc/convert-path-dxyz%.png]]
+[[./doc/convert-path-dxyz%25.png]]
 
 #+begin_src common-lisp
 
