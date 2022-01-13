@@ -30,13 +30,15 @@ Generated GCode is intentionally reduduced to =linear=, =incremental= segments. 
 
 ~run-view-tests~ covers main *XY* paths configurations, among them:
 - Layout of a fingerjointed box
-  [[./doc/tbox-outline.png]]
+
+    [[./doc/tbox-outline.png]]
+
 - Ticked outline of a fingerjoint face
-  [[./doc/ticked-outline.png]]
-- A closed spiral, e.g. for pockets
-  [[./doc/closed-spiral.png]]
-- A filled rectangle, e.g. for surface planing
-  [[./doc/filled-rectangle.png]]
+    [[./doc/ticked-outline.png]]
+
+- A closed spiral, e.g. for pockets, and  filled rectangle, e.g. for surface planing
+  
+  [[./doc/closed-spiral.png]] [[./doc/filled-rectangle.png]]
 
 ** Generate GCode
 
