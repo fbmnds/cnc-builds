@@ -68,7 +68,7 @@ The correctness of the generated GCode may e.g. verified with the visualizer of 
 
 The *TAPs* are visible e.g. right below of the yellow cone and left of the "4 mm" marking. 
 
-** *Tick* and *TAP* combined
+** *TICK* and *TAP* combined
 *** Genereate a *XY* path with *TICKs*
 - Construct a *XY* path with ~(car paths/box-tests::tbox)~
 - Calculate the *OUTER PATH* by ~(shift-path-- r~ 
