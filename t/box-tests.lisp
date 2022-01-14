@@ -377,7 +377,11 @@
   (paths/view:view
    (mapcar #'(lambda (c) (c* 100 c))
            (fill-inner-rectangle 0.1 '((0 . 0) (1 . 0) (1 . 1) (0 . 1))))
-   110 110))
+   110 110)
+  (paths/view:view
+   (shift-y 51
+            (shift-x 51
+                     (fill-inner-rectangle 5 (circle-path 50 120)))) 250 250))
 
 
 
