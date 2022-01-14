@@ -244,10 +244,14 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
   "Calculate the inner rectangle of RECT with distance DR towards the geometric CENTER."
   (let ((center (or center (geometric-center rect))))
     (list center
-          (mapcar #'(lambda (c) (c+ c (c* dr (c-normed (c- center c))))) rect))))
+          (mapcar #'(lambda (c)
+                      (c+ c (c* dr (c-normed (c- center c))))) rect))))
 
 (defun fill-inner-rectangle (r rect)
-  "Fill RECT with a sequence of inner rectangle paths with distance R."
+  "Fill RECT with a sequence of inner rectangle paths with distance R.
+
+[With fixed geometric-center, Works now with any path, ref. test case circle]
+[TODO: rethink center is better starting point than (car rect)]"
   (let* ((center (geometric-center rect))         
          (dr (* (sqrt 2) r))
          (dmax (apply #'max
