@@ -57,9 +57,17 @@
   (assert (not (in-row-p '((2.5 . 2.5) (9.5 . 2.5) (9.5 . 0.0)))))
 
   (assert (equal (stats (car tbox))
-                 '(:LEN 90 :MAX-X 65.0 :MIN-X 0 :MAX-Y 45.0 :MIN-Y 0)))
+                 '(:LEN 90
+                   :MAX-X 65.0 :MIN-X 0.0 :AVG-X 33.077778
+                   :MAX-Y 45.0 :MIN-Y 0.0 :AVG-Y 22.9)))
+  (assert (equal (stats-acc (list (car tbox)))
+                 '(:LEN 90
+                   :MAX-X 65.0 :MIN-X 0.0 :AVG-X 33.077778
+                   :MAX-Y 45.0 :MIN-Y 0.0 :AVG-Y 22.9)))
   (assert (equal (stats-acc tbox)
-                 '(:LEN 436 :MAX-X 192.0 :MIN-X 0 :MAX-Y 74.0 :MIN-Y 0)))
+                 '(:LEN 436
+                   :MAX-X 192.0 :MIN-X 0.0 :AVG-X 92.70642
+                   :MAX-Y 74.0 :MIN-Y 0.0 :AVG-Y 35.766056)))
   
   (let ((x '(1 2 3 4 5)))
     (assert (equal (group-3 x)

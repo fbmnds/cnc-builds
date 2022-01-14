@@ -237,7 +237,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
 (defun geometric-center (p)
   "Calculate the geometric center of PATH p."
   (let ((c-x 0) (c-y 0) (len 0)
-        (p2 (remove-duplicates p :test #'c=)))
+        (p2 (close-path (optimize-path p))))
     (dolist (c p2)
       (destructuring-bind (x . y) c
         (incf len)
@@ -266,7 +266,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                     dr))
       (push prev p))
     (push (list center) p)
-    (list center (apply #'nconc p))))
+    (cons (car rect) (apply #'nconc p))))
 
 ;; deprecated
 (defun convert-dxyz (c1-c2 i dz nz &optional (nt (/ nz 2)))
