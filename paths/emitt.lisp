@@ -236,14 +236,9 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
 
 (defun geometric-center (p)
   "Calculate the geometric center of PATH p."
-  (let ((c-x 0) (c-y 0) (len 0)
-        (p2 (close-path (optimize-path p))))
-    (dolist (c p2)
-      (destructuring-bind (x . y) c
-        (incf len)
-        (setf c-x (+ c-x x))
-        (setf c-y (+ c-y y))))
-    (values (when (> len 0) (cons (/ c-x len) (/ c-y len))) len)))
+  (let* ((p2 (remove-duplicates p :test #'c=))
+         (st (stats p2)))
+    (cons (getf st :avg-x) (getf st :avg-y))))
 
 (defun inner-rectangle (dr rect &optional center)
   "Calculate the inner rectangle of RECT with distance DR towards the geometric CENTER."
