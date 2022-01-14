@@ -146,7 +146,8 @@ coordinate tuples for further processing."
   (cond ((and (numberp r) (xy-p c))
          (cons (round* (* r (c-x c))) (round* (* r (c-y c)))))
         ((and (numberp r) (xyz-p c))
-         (cons (c* r (car c)) (round* (* r (cdr c)))))
+         (cons (cons (round* (* r (c-x c))) (round* (* r (c-y c))))
+               (round* (* r (c-z c)))))
         (t (error (format nil "c* undefined for ~a ~a" r c)))))
 
 (defun euklid (c)

@@ -68,7 +68,16 @@
                  '(:LEN 436
                    :MAX-X 192.0 :MIN-X 0.0 :AVG-X 92.70642
                    :MAX-Y 74.0 :MIN-Y 0.0 :AVG-Y 35.766056)))
-  
+
+  (assert (c= (geometric-center '((0 . 0) (1 . 0) (1 . 1)))
+              '(0.666667 . 0.333333)))
+  (assert (c= (geometric-center '((0 . 0) (1 . 0) (1 . 1) (0 . 1)))
+              '(0.5 . 0.5)))
+  (assert (c= (geometric-center '((0 . 0) (2 . 0) (3 . 1) (1 . 1)))
+              '(1.5 . 0.5)))
+  (assert (c= (geometric-center (circle-path 5 12))
+              '(0.0 . 0.0)))
+
   (let ((x '(1 2 3 4 5)))
     (assert (equal (group-3 x)
                    '((1 2 3) (2 3 4) (3 4 5) (4 5 1) (5 1 2))))
@@ -257,7 +266,40 @@
     (assert (equal gc
                    (emitt-gcode-xy-z
                     (convert-path-dxyz square (group-2 square) 2.5 -0.5 5)
-                    -0.5 1200)))))
+                    -0.5 1200))))
+  (assert (c= (geometric-center
+               (nconc
+                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                        (closed-spiral 01 (cons 50 0) (cons 60 0)))
+                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                        (spiral 01 (cons 50 0) (cons 60 0)))
+                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                        (spiral 01 (cons 40 0) (cons 50 0)))
+                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                        (spiral 01 (cons 30 0) (cons 40 0)))
+                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                        (spiral 01 (cons 20 0) (cons 30 0)))
+                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                        (spiral 01 (cons 0 0) (cons 20 0)))))
+              '(59.979214 . 58.75419)))
+  (assert (equal
+           (stats
+            (nconc
+             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                     (closed-spiral 01 (cons 50 0) (cons 60 0)))
+             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                     (spiral 01 (cons 50 0) (cons 60 0)))
+             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                     (spiral 01 (cons 40 0) (cons 50 0)))
+             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                     (spiral 01 (cons 30 0) (cons 40 0)))
+             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                     (spiral 01 (cons 20 0) (cons 30 0)))
+             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+                     (spiral 01 (cons 0 0) (cons 20 0)))))
+           '(:LEN 1799
+             :MAX-X 120.0 :MIN-X 0.0020939999 :AVG-X 60.15845
+             :MAX-Y 119.99946 :MIN-Y 5.42E-4 :AVG-Y 58.692585))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)
@@ -334,7 +376,7 @@
                   (spiral 01 (cons 0 0) (cons 20 0)))) 120 120)
   (paths/view:view
    (mapcar #'(lambda (c) (c* 100 c))
-           (cadr (fill-inner-rectangle 0.1 '((0 . 0) (1 . 0) (1 . 1) (0 . 1)))))
+           (fill-inner-rectangle 0.1 '((0 . 0) (1 . 0) (1 . 1) (0 . 1))))
    110 110))
 
 
