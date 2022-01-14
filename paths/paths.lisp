@@ -275,29 +275,37 @@ three coordinates of the path C."
                      (= (cdar c) (cdadr c) (cdaddr c)))))
 
 (defun stats (p)
-  "Return min-max-length-statistics for the path P of XY-coordinates."
+  "Return avg-min-max-length-statistics for the path P of XY-coordinates."
   (loop for c in p
         counting c into len
-        maximizing (car c) into max-x
-        minimizing (car c) into min-x
-        maximizing (cdr c) into max-y
-        minimizing (cdr c) into min-y
+        maximizing (c-x c) into max-x
+        minimizing (c-x c) into min-x
+        summing (c-x c) into avg-x
+        maximizing (c-y c) into max-y
+        minimizing (c-y c) into min-y
+        summing (c-y c) into avg-y
         finally
-        (return (list :len len :max-x max-x :min-x min-x
-                      :max-y max-y :min-y min-y))))
+           (return
+             (list :len len
+                   :max-x max-x :min-x min-x :avg-x (round* (/ avg-x len))
+                   :max-y max-y :min-y min-y :avg-y (round* (/ avg-y len))))))
 
 (defun stats-acc (ps)
-  "Return the list of min-max-length-statistics for the list of paths PS
+  "Return the list of avg-min-max-length-statistics for the list of paths PS
 of XY-coordinates."
   (loop for s in (mapcar #'stats ps)
-        summing (nth 1 s) into len
-        maximizing (nth 3 s) into max-x
-        minimizing (nth 5 s) into min-x
-        maximizing (nth 7 s) into max-y
-        minimizing (nth 9 s) into min-y
+        summing (getf s :len) into len
+        maximizing (getf s :max-x) into max-x
+        minimizing (getf s :min-x) into min-x
+        summing (* (getf s :len) (getf s :avg-x)) into avg-x
+        maximizing (getf s :max-y) into max-y
+        minimizing (getf s :min-y) into min-y
+        summing (* (getf s :len) (getf s :avg-y)) into avg-y
         finally
-        (return (list :len len :max-x max-x :min-x min-x
-                      :max-y max-y :min-y min-y))))
+           (return
+             (list :len len
+                   :max-x max-x :min-x min-x :avg-x (round* (/ avg-x len))
+                   :max-y max-y :min-y min-y :avg-y (round* (/ avg-y len))))))
 
 (defun trim-path (p &optional (len (length p)))
   "Deduplicate the XY-path P and reduce those path segments which are in row with
