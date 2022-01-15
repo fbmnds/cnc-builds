@@ -96,12 +96,26 @@ i.e. list of coordinate tuples for further processing."
 (deftype coord-tag-xyz () '(satisfies tag-xyz-p))
 (deftype coord () '(or coord-xy coord-xyz))
 
+(defun list-xy-p (path) (every #'xy-p path))
+(defun list-xyz-p (path) (every #'xyz-p path))
+
+(deftype path-xy () '(satisfies list-xy-p))
+(deftype path-xyz () '(satisfies list-xyz-p))
+(deftype path () '(or path-xy path-xyz))
+
 (defun xy-xy-p (c) (and (consp c) (xy-p (car c)) (xy-p (cdr c))))
 (defun xyz-xyz-p (c) (and (consp c) (xyz-p (car c)) (xyz-p (cdr c))))
 
 (deftype segment-xy () '(satisfies xy-xy-p))
 (deftype segment-xyz () '(satisfies xyz-xyz-p))
 (deftype segment () '(or segment-xy segment-xyz))
+
+(defun list-xy-xy-p (path-segments) (every #'xy-xy-p path-segments))
+(defun list-xyz-xyz-p (path-segments) (every #'xyz-xyz-p path-segments))
+
+(deftype path-segments-xy () '(satisfies list-xy-xy-p))
+(deftype path-segments-xyz () '(satisfies list-xyz-xyz-p))
+(deftype path-segments () '(or path-segments-xy path-segments-xyz))
 
 (defun c-x (c)
   "Return X of XY- and XYZ-coordinates."
@@ -132,13 +146,12 @@ i.e. list of coordinate tuples for further processing."
 
 (defun c- (c1 c2)
   "Return the difference vector C1 - C2 of XY-/XYZ-coordinates."
-  (cond ((and (xy-p c1) (xy-p c2))
-         (cons (- (c-x c1) (c-x c2)) (- (c-y c1) (c-y c2))))
-        ((and (xyz-p c1) (xyz-p c2))
-         (cons (cons (- (c-x c1) (c-x c2))
-                     (- (c-y c1) (c-y c2)))
-               (- (c-z c1) (c-z c2))))
-        (t (error (format nil "C- undefined for ~a ~a" c1 c2)))))
+  (typecase (list c1 c2)
+    (path-xy (cons (- (c-x c1) (c-x c2)) (- (c-y c1) (c-y c2))))
+    (path-xyz (cons (cons (- (c-x c1) (c-x c2))
+                          (- (c-y c1) (c-y c2)))
+                    (- (c-z c1) (c-z c2))))
+    (t (error (format nil "C- undefined for ~a ~a" c1 c2)))))
 
 (defun c2-c1- (c1-c2)
   "Return the difference vector C1 - C2 of a path segment of 
@@ -149,13 +162,12 @@ XY-/XYZ-coordinates."
 
 (defun c+ (c1 c2)
   "Return the sum vector C1 + C2 of XY-/XYZ-coordinates."
-  (cond ((and (xy-p c1) (xy-p c2))
-         (cons (+ (c-x c1) (c-x c2)) (+ (c-y c1) (c-y c2))))
-        ((and (xyz-p c1) (xyz-p c2))
-         (cons (cons (+ (c-x c1) (c-x c2))
-                     (+ (c-y c1) (c-y c2)))
-               (+ (c-z c1) (c-z c2))))
-        (t (error (format nil "C+ undefined for ~a ~a" c1 c2)))))
+  (typecase (list c1 c2)
+    (path-xy (cons (+ (c-x c1) (c-x c2)) (+ (c-y c1) (c-y c2))))
+    (path-xyz (cons (cons (+ (c-x c1) (c-x c2))
+                          (+ (c-y c1) (c-y c2)))
+                    (+ (c-z c1) (c-z c2))))
+    (t (error (format nil "C+ undefined for ~a ~a" c1 c2)))))
 
 (defun c* (r c)
   "Return the linear product R * C for XY-/XYZ-coordinates."
@@ -191,11 +203,13 @@ XY-/XYZ-coordinates."
          (> *precision* (euklid (c- c1 c2))))
         ((and (listp c1) (listp c2))
          (every #'identity (mapcar #'c= c1 c2)))
-        (t (error (format nil "c= undefined for ~a ~a" c1 c2)))))
+        (t (error (format nil "C= undefined for ~a ~a" c1 c2)))))
 
 (defun c1-c2= (s1 s2)
   "Return numerical equality for XY-/XYZ path segments."
-  (and (c= (car s1) (car s2)) (c= (cdr s1) (cdr s2))))
+  (typecase (list s1 s2)
+    (path-segments (c= (cdr s1) (cdr s2)))
+    (t (error (format nil "C1-C2= undefined for ~a ~a" s1 s2)))))
 
 (defun c-normed (c)
   "Return the normed vector of the XY-/XYZ-coordinate C."
@@ -205,39 +219,48 @@ XY-/XYZ-coordinates."
 
 (defun normale-+ (c1 c2)
   "Return the positive oriented normale of the XY-/XYZ path segment C1 - C2."
-  (let ((d (c-normed (c- c1 c2))))
-    (cond ((c= c1 c2) (error "undefined normale on zero vector"))
-          (t (round* (cons (* -1.0 (c-y d)) (c-x d)))))))
+  (typecase (list c1 c2)
+    (path-xy
+     (let ((d (c- c1 c2)))
+       (cond ((zerop* d)
+              (error "NORMALE-+ undefined on zero vector (~a . ~a)" c1 c2))
+             (t (setf d (c-normed d))
+                (round* (cons (* -1.0 (c-y d)) (c-x d)))))))
+    (t (error "NORMALE-+ undefined for ~a ~a" c1 c2))))
 
 (defun normale-- (c1 c2)
   "Return the negative oriented normale of the XY-/XYZ path segment C1 - C2."
-  (c* -1.0 (normale-+ c1 c2)))
+  (typecase (list c1 c2)
+    (path-xy (c* -1.0 (normale-+ c1 c2)))
+    (t (error "NORMALE-- undefined for ~a ~a" c1 c2))))
 
 (defun det2 (c1 c2)
   "Return the determinante of the XY-coordinates C1 and C2."
-  (round* (- (* (c-x c1) (c-y c2)) (* (c-x c2) (c-y c1)))))
+  (typecase (list c1 c2)
+    (path-xy (round* (- (* (c-x c1) (c-y c2)) (* (c-x c2) (c-y c1)))))
+    (t (error "DET2 undefined for ~a ~a" c1 c2))))
 
 (defun collinear-coord-p (c0 c1 c2)
-  (if (or (and (typep c0 coord-xy) (typep c1 coord-xy) (typep c2 coord-xy))
-          (and (typep c0 coord-xyz) (typep c1 coord-xyz) (typep c2 coord-xyz)))
-      (let ((c1-c0 (c-normed (c- c1 c0)))
-        (c2-c0 (c-normed (c- c2 c0))))
-        (< (euklid (c- c1-0 c2-c0)) *precision*))
-      (error
-       (format nil "COLLINIEAR-COORD-P undefined for ~a ~a ~a" c0 c1 c2))))
+  (typecase (list c0 c1 c2)
+    (path (let ((c1-c0 (c-normed (c- c1 c0)))
+                (c2-c0 (c-normed (c- c2 c0))))
+            (or (< (euklid (c+ c1-0 c2-c0)) *precision*)
+                (< (euklid (c- c1-0 c2-c0)) *precision*))))
+    (t (error
+        (format nil "COLLINEAR-COORD-P undefined for ~a ~a ~a" c0 c1 c2)))))
 
 (defun collinear-segment-p (s0 s1)
-  (cond ((and (or (and (typep s0 segment-xy) (typep s1 segment-xy))
-                  (and (typep s0 segment-xyz) (typep s1 segment-xyz)))
-              (c= (cdr s0) (car s1)))
-         (collinear-coord-p (car s0) (cdr s0) (cdr s1)))
-        ((or (and (typep s0 segment-xy) (typep s1 segment-xy))
-             (and (typep s0 segment-xyz) (typep s1 segment-xyz)))
-         (< (euklid (c-normed (c- (cdr s0) (car s0)))
-                    (c-normed (c- (cdr s1) (car s1))))
-            *precision*))
-        (t (error
-            (format nil "COLLINIEAR-SEGMENT-P undefined for ~a ~a" s0 s1)))))
+  (typecase (list s0 s1)
+    (path-segments (if (c= (cdr s0) (car s1))
+                       (collinear-coord-p (car s0) (cdr s0) (cdr s1))
+                       (or (< (euklid (c+ (c-normed (c- (cdr s0) (car s0)))
+                                          (c-normed (c- (cdr s1) (car s1)))))
+                              *precision*)
+                           (< (euklid (c- (c-normed (c- (cdr s0) (car s0)))
+                                          (c-normed (c- (cdr s1) (car s1)))))
+                              *precision*))))
+    (t (error
+        (format nil "COLLINEAR-SEGMENT-P undefined for ~a ~a" s0 s1)))))
 
 ;; deprecated
 (defun collinear-2d (c0 c1 c2)

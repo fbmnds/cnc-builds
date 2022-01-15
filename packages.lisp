@@ -11,11 +11,21 @@
            #:coord
            #:coord-xy
            #:coord-xyz
+           #:list-xy-p
+           #:list-xyz-p
+           #:path
+           #:path-xy
+           #:path-xyz
            #:xy-xy-p
            #:xyz-xyz-p
            #:segment
            #:segment-xy
            #:segment-xyz
+           #:list-xy-xy-p
+           #:list-xyz-xyz-p
+           #:path-segments
+           #:path-segments-xy
+           #:path-segments-xyz
            #:c-x
            #:c-y
            #:c-z
