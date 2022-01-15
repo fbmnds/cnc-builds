@@ -1,7 +1,9 @@
 
 (defpackage #:paths
   (:use #:cl)
-  (:export #:*precision*
+  (:export ;; paths
+           #:set-precision
+           #:set-machine-precision
            #:round*
            #:zerop*
            #:xy-p
@@ -9,9 +11,15 @@
            #:coord
            #:coord-xy
            #:coord-xyz
+           #:xy-xy-p
+           #:xyz-xyz-p
+           #:segment
+           #:segment-xy
+           #:segment-xyz
            #:c-x
            #:c-y
            #:c-z
+           #:test-c-z
            #:c1-c2=
            #:group-2
            #:group-3
@@ -26,6 +34,8 @@
            #:normale-+
            #:normale--
            #:det2
+           #:collinear-coord-p
+           #:collinear-segment-p
            #:collinear-2d
            #:shift-corner-+
            #:shift-corner--
@@ -50,36 +60,35 @@
            #:spiral-polar
            #:spiral
            #:closed-spiral
-           #:while))
-
-(defpackage #:paths/emitt
-  (:use #:cl #:paths)
-  (:export  #:group
-            #:group-2
-            #:emitt-scad
-            #:emitt-scad-box
-            #:emitt-gcode-path
-            #:emitt-gcode
-            #:insert-tag
-            #:insert-tags
-            #:convert-dxyz
-            #:optimize-relative-distances
-            #:convert-path-dxyz
-            #:convert-path-dxyz%
-            #:emitt-gcode-xy-z
-            #:close-path
-            #:optimize-path
-            #:segments-by-length
-            #:inner-ticks
-            #:tag-path
-            #:expand-path
-            #:geometric-center
-            #:inner-rectangle
-            #:fill-inner-rectangle))
-
-(defpackage #:paths/box
-  (:use #:cl)
-  (:export #:round_d-3
+           #:while
+           ;; emitt
+           #:group
+           #:group-2
+           #:emitt-scad
+           #:emitt-scad-box
+           #:emitt-gcode-path
+           #:emitt-gcode
+           #:insert-tag
+           #:insert-tags
+           #:convert-dxyz
+           #:optimize-relative-distances
+           #:convert-path-dxyz
+           #:convert-path-dxyz%
+           #:emitt-gcode-xy-z
+           #:close-path
+           #:optimize-microsteps
+           #:optimize-path
+           #:segments-by-length
+           #:inner-ticks
+           #:tag-path
+           #:expand-path
+           #:geometric-center
+           #:inner-path
+           #:outer-path
+           #:fill-pocket
+           #:fill-inner-rectangle
+           ;; box
+           #:round_d-3
            #:eql-c
            #:eql-l
            #:eql_d-3
@@ -107,8 +116,8 @@
            #:multi-view
            #:colored-multi-view))
 
-(defpackage #:paths/box-tests
-  (:use #:cl #:paths #:paths/box #:paths/emitt #:paths/view)
+(defpackage #:paths/tests
+  (:use #:cl #:paths #:paths/view)
   (:export #:run-tests
            #:run-view-tests))
 
