@@ -1,5 +1,5 @@
 
-(in-package #:paths/box)
+(in-package #:paths)
 
 (defun round_d-3 (x) (/ (round x 0.001) 1000))
 

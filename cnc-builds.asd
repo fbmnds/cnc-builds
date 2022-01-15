@@ -27,5 +27,5 @@
     ((:file "view")))
    (:module "t"
     :components
-    ((:file "box-tests")))))
+    ((:file "tests")))))
 

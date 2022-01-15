@@ -1,5 +1,5 @@
 
-(in-package #:paths/box-tests)
+(in-package #:paths/tests)
 
 (defparameter l1 '((1 . 1) (11 . 1) (11 . 5) (1 . 5)))
 (defparameter l2 '((0 . 0) (10 . 0) (10 . 5) (15 . 5)))
@@ -28,6 +28,21 @@
 (defparameter square '((0. . 0.) (10. . 0.) (10. . 10.) (0. . 10.)))
 
 (defparameter rhomb '((0 . 10) (10 . 0) (20 . 10) (10 . 20)))
+
+(defparameter spiral-01
+  (nconc
+   (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+           (closed-spiral 01 (cons 50 0) (cons 60 0)))
+   (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+           (spiral 01 (cons 50 0) (cons 60 0)))
+   (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+           (spiral 01 (cons 40 0) (cons 50 0)))
+   (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+           (spiral 01 (cons 30 0) (cons 40 0)))
+   (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+           (spiral 01 (cons 20 0) (cons 30 0)))
+   (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
+           (spiral 01 (cons 0 0) (cons 20 0)))))
 
 (defun run-tests ()
   (assert (equal (flip-x l1) '((1 . -1) (11 . -1) (11 . -5) (1 . -5))))
@@ -203,7 +218,7 @@
                ((0 . 0) . -2.0) ((0.0 . -5.0) . 0) ((0 . 0) . 2.0)
                ((0.0 . -2.5) . 0))))
     (assert (equal ret
-                   (paths/emitt::convert-path-dxyz%
+                   (convert-path-dxyz%
                     square (group-2 square) 2.5 0.5 5))))
   
   (let ((ret '(((0. . 0.) . 0.5)
@@ -267,39 +282,12 @@
                    (emitt-gcode-xy-z
                     (convert-path-dxyz square (group-2 square) 2.5 -0.5 5)
                     -0.5 1200))))
-  (assert (c= (geometric-center
-               (nconc
-                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                        (closed-spiral 01 (cons 50 0) (cons 60 0)))
-                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                        (spiral 01 (cons 50 0) (cons 60 0)))
-                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                        (spiral 01 (cons 40 0) (cons 50 0)))
-                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                        (spiral 01 (cons 30 0) (cons 40 0)))
-                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                        (spiral 01 (cons 20 0) (cons 30 0)))
-                (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                        (spiral 01 (cons 0 0) (cons 20 0)))))
-              '(59.979214 . 58.75419)))
-  (assert (equal
-           (stats
-            (nconc
-             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                     (closed-spiral 01 (cons 50 0) (cons 60 0)))
-             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                     (spiral 01 (cons 50 0) (cons 60 0)))
-             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                     (spiral 01 (cons 40 0) (cons 50 0)))
-             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                     (spiral 01 (cons 30 0) (cons 40 0)))
-             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                     (spiral 01 (cons 20 0) (cons 30 0)))
-             (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                     (spiral 01 (cons 0 0) (cons 20 0)))))
+  (assert (equal (stats spiral-01)
            '(:LEN 1799
              :MAX-X 120.0 :MIN-X 0.0020939999 :AVG-X 60.15845
-             :MAX-Y 119.99946 :MIN-Y 5.42E-4 :AVG-Y 58.692585))))
+             :MAX-Y 119.99946 :MIN-Y 5.42E-4 :AVG-Y 58.692585)))
+  (assert (c= (geometric-center spiral-01)
+              '(59.979214 . 58.75419))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)
@@ -341,39 +329,26 @@
          (cons :green (shift-path-+ 1.5 rhomb))))
   (paths/view:colored-multi-view
    (list (cons :white
-               (paths/box:shift-x
+               (shift-x
                 101
-                (paths/box:shift-y
+                (shift-y
                  101
-                 (paths:circle-path 100 100))))
+                 (circle-path 100 100))))
          (cons :red
-               (paths/box:shift-x
-                101 (paths/box:shift-y
-                     101 (paths:shift-path--
-                          2 (paths:circle-path 100 25)))))
+               (shift-x
+                101 (shift-y
+                     101 (shift-path--
+                          2 (circle-path 100 25)))))
          (cons :green
-               (paths/box:shift-x
-                101 (paths/box:shift-y
-                     101 (paths:shift-path-+
-                          2 (paths:circle-path 100 25)))))))
+               (shift-x
+                101 (shift-y
+                     101 (shift-path-+
+                          2 (circle-path 100 25)))))))
   (let ((p4 (mapcar #'(lambda (c) (c* 4 c)) (car tbox))))
     (paths/view:colored-multi-view
      (list (cons :white p4)
-           (cons :green
-                 (paths/emitt:inner-ticks 5 (paths:shift-path-- 5 p4))))))
-  (paths/view:view
-   (nconc (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (closed-spiral 01 (cons 50 0) (cons 60 0)))
-          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (spiral 01 (cons 50 0) (cons 60 0)))
-          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (spiral 01 (cons 40 0) (cons 50 0)))
-          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (spiral 01 (cons 30 0) (cons 40 0)))
-          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (spiral 01 (cons 20 0) (cons 30 0)))
-          (mapcar #'(lambda (c) (cons (+ 60 (c-x c))(+ 60 (c-y c))))
-                  (spiral 01 (cons 0 0) (cons 20 0)))) 120 120)
+           (cons :green (inner-ticks 5 (shift-path-- 5 p4))))))
+  (paths/view:view spiral-01 120 120)
   (paths/view:view
    (mapcar #'(lambda (c) (c* 100 c))
            (fill-inner-rectangle 0.1 '((0 . 0) (1 . 0) (1 . 1) (0 . 1))))

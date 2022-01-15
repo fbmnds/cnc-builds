@@ -1,5 +1,5 @@
 
-(in-package #:paths/emitt)
+(in-package #:paths)
 
 
 ;; deprecated
@@ -122,11 +122,17 @@ with decreasing Z position in steps of DZ an feed F."
       (dolist (c1-c2 p2) (push-it c1-c2))
       (nreverse ret))))
 
+;; TODO
+(defun optimize-microsteps (path &optional (eps 0.001))
+  "Merge consecutive PATH segments recursively, iff the corresponding 
+first segment progresses less than EPS."
+  path)
+
 (defun optimize-path (path &optional (eps 0.001))
   "Merge consecutive PATH segments recursively, iff they are collinear."
   (let ((c0 (car path))
         (c1 (cadr path))
-        p)
+        (p (optimize-microsteps path eps)))
     (if (and c0 c1)
         (labels ((rec (rpath)
                    (let ((c2 (car rpath)))
@@ -234,23 +240,50 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                   (set-coord v i (caar path.ip) (cdar path.ip) izdz)))))))
     (values v (+ i 3))))
 
-(defun geometric-center (p)
-  "Calculate the geometric center of PATH p."
-  (let* ((p2 (remove-duplicates p :test #'c=))
+(defun geometric-center (path)
+  "Calculate the geometric center of PATH."
+  (let* ((p2 (remove-duplicates path :test #'c=))
          (st (stats p2)))
     (cons (getf st :avg-x) (getf st :avg-y))))
 
-(defun inner-rectangle (dr rect &optional center)
-  "Calculate the inner rectangle of RECT with distance DR towards the geometric CENTER."
-  (let ((center (or center (geometric-center rect))))
+(defun inner-path (dr path &optional center)
+  "Return the inner path of PATH with distance DR towards the geometric 
+CENTER. For a relevant class of paths, this is/approximates the inner path 
+with a constant perpendicular distance between the segments of path and inner 
+path, ref. functions shift-path-+/-."
+  (let ((center (or center (geometric-center path))))
     (list center
           (mapcar #'(lambda (c)
-                      (c+ c (c* dr (c-normed (c- center c))))) rect))))
+                      (c+ c (c* dr (c-normed (c- center c))))) path))))
+
+(defun outer-path (dr path &optional center)
+  "Return the outer path of PATH with distance DR 'from' the geometric CENTER, 
+ref. inner-path."
+  (let ((center (or center (geometric-center path))))
+    (list center
+          (mapcar #'(lambda (c)
+                      (c+ c (c* dr (c-normed (c- c center))))) path))))
+
+(defun fill-pocket (r path)
+  "Fill PATH with a sequence of inner paths with distance R, end in center."
+  (let* ((center (geometric-center path))         
+         (dr (* (sqrt 2) r))
+         (dmax (apply #'max
+                      (mapcar #'(lambda (c) (euklid (c- center c))) path)))
+         (prev (close-path (copy-list path)))
+         (p (list prev)))
+    (while (> dmax 0)
+      (setf prev (cadr (inner-path dr prev center)))
+      (setf dmax (- (apply #'max
+                           (mapcar #'(lambda (c) (euklid (c- center c))) prev))
+                    dr))
+      (push prev p))
+    (push (list center) p)
+    (nconc p)))
 
 (defun fill-inner-rectangle (r rect)
   "Fill RECT with a sequence of inner rectangle paths with distance R.
 
-[With fixed geometric-center, Works now with any path, ref. test case circle]
 [TODO: rethink center is better starting point than (car rect)]"
   (let* ((center (geometric-center rect))         
          (dr (* (sqrt 2) r))
@@ -259,7 +292,7 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
          (prev (close-path (copy-list rect)))
          (p (list prev)))
     (while (> dmax 0)
-      (setf prev (cadr (inner-rectangle dr prev center)))
+      (setf prev (cadr (inner-path dr prev center)))
       (setf dmax (- (apply #'max
                            (mapcar #'(lambda (c) (euklid (c- center c))) prev))
                     dr))
@@ -454,4 +487,41 @@ tags at TAGS with width (* 2 W/2) and height (* |DZ| (- NZ NZ-PASS))."
                     (push gc ret)))))))
     (nreverse ret)))
 
+(defun emitt-gcode-coord (c &key (gx "G0") f (eps 0.001))
+  "Return the Gcode for the XY-/XYZ-coordinate C with prefix GX and speed F."  
+  (let ((gc gx))
+    (unless (< (abs (c-x c)) eps) (setf gc (format nil "~a X~3$" gc (c-x c))))
+    (unless (< (abs (c-y c)) eps) (setf gc (format nil "~a Y~3$" gc (c-y c))))
+    (when (test-c-z c eps) (setf gc (format nil "~a Z~3$" gc (c-z c))))
+    (when f (setf gc (format nil "~a F~a" gc f)))
+    gc))
+
+(defun emitt-gcode-xyz (path f &optional (fz (round (* 0.8 f))) (eps 0.001))
+  "Emitt the incremental GCODE beginning with the move to the second PATH 
+coordinate and ending with the move to the last coordinate."
+  (let* ((p (typecase (car path)
+              (coord-xy (butlast
+                         (group-2
+                          (mapcar #'(lambda (c) (cons c 0)) path))))
+              (coord-xyz (butlast (group-2 path)))))
+         (f-prev (if (test-z (car p)) fz f))
+         (gcode (list (emitt-gcode-coord (car p) :f f-prev :eps eps))))
+    (dolist (c (cdr p))
+      (let* ((dc (c- (cdr c) (car c)))
+             (f-set (if (test-c-z dc) fz f)))
+        (if (= f-prev f-set)
+            (emitt-gcode-coord c :eps eps)
+            (progn
+              (setf f-prev f-set)
+              (push (emitt-gcode-coord c :f f-set :eps eps) gcode)))))
+    gcode))
+
+(defun emitt-gcode-xyz-from-origin
+    (path f &optional
+              (fz (round (* 0.8 f)))
+              (security-z 5)
+              (eps 0.001))
+  "Emitt the incremental GCODE including the move from the origin to the 
+first PATH coordinate and ending with the move to the last coordinate."
+  ())
  
