@@ -277,38 +277,6 @@ XY-/XYZ-coordinates."
                      (* x3 (- y1 y2)))))
       (cons c0 c2))))
 
-;; M = a b
-;;     c d
-;; det2 M = ad - cb
-;; M^-1 = 1/det2 * d -b
-;;                 -c a
-
-(defun linear-solution (m1 m2 b)
-  (ignore-errors
-   (let ((det (det2 m1 m2)))
-     (round* (cons (/ (+ (* (cdr m2) (car b)) (* (cdr m1) (cdr b))) det)
-                   (/ (- (* (car m1) (cdr b)) (* (car m2) (car b))) det))))))
-
-(defun radius-center-in-corner (c1 c2 c3 c4)
-  (ignore-errors
-   (round* (c+ c2
-               (c* (car (c+ c2 (c* (car (linear-solution (normale-+ c1 c2)
-                                                         (normale-+ c3 c4)
-                                                         (c- c3 c2)))
-                                   (normale-+ c1 c2))))
-                   (normale-+ c1 c2))))))
-
-#|
-(paths:radius-center-in-corner '(0 . 0) '(0 . 1) '(0.5 . 1.5) '(1.5 . 1.5))
-=> '(0.5 . 1)
-(paths:radius-center-in-corner '(0.5 . 1.5) '(1.5 . 1.5) '(2 . 1) '(2 . 0))
-!=> '(1.5 . 1)
-(paths:radius-center-in-corner '(2 . 1) '(2 . 0) '(1.5 . -0.5) '(1 . -0.5))
-!=> '(1.5 . 0)
-(paths:radius-center-in-corner '(1.5 . -0.5) '(0.5 . -0.5) '(0 . 0) '(0 . 1))
-=> (0.5 . 0)
-|#
-
 (defun shift-corner-+ (r c1 c2 c3)
   "Return the coordinate of the inner XY point with distance R
 to both path segments C1 C2 and C2 C3. The distance to the corner C1 C2 C3

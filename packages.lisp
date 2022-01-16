@@ -56,8 +56,6 @@
            #:stats-acc
            #:trim-path
            #:circle-path
-           #:linear-solution
-           #:radius-center-in-corner
            #:min-xy-path
            #:flip-path
            #:shift-path-origin
