@@ -39,6 +39,9 @@
            #:c+
            #:c*
            #:euklid
+           #:scalar-product
+           #:inner-angle
+           #:outer-angle
            #:c=
            #:c-normed
            #:normale-+
