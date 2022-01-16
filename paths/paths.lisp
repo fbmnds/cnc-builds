@@ -188,12 +188,43 @@ XY-/XYZ-coordinates."
                                 (* (c-z c) (c-z c))))))
     (t (error (format nil "EUKLID undefined for ~a" c)))))
 
+(defun scalar-product (s0 s1)
+  "Return the scalar product of the XY-/XYZ-coordinates C0 and C1."
+  (typecase (list s0 s1)
+    (path-segments
+     (let ((c0 (c- (cdr s0) (car s0)))
+           (c1 (c- (cdr s1) (car s1))))
+       (typecase (list c0 c1)
+         (path-xy (round* (+ (* (c-x c0) (c-x c1))
+                             (* (c-y c0) (c-y c1)))))
+         (path-xyz (round* (+ (* (c-x c0) (c-x c1))
+                              (* (c-y c0) (c-y c1))
+                              (* (c-z c0) (c-z c1))))))))
+    (t (error (format nil "SCALAR-PRODUCT undefined for ~a ~a" s0 s1)))))
+
 (defun zerop* (x &optional (precision *precision*))
+  "ZERO predicate within *PRECISION* for numbers, coordinates and segments."
   (typecase x
     (number (> precision (abs x)))
     (coord (> precision (euklid x)))
     (segment (> precision (euklid (c- (cdr x) (car x)))))
     (t (error (format nil "ZEROP* undefined for ~a" c)))))
+
+(defun inner-angle (s0 s1)
+  "Return the inner angle of the XY-/XYZ path segments S) and S1."
+  (typecase (list s0 s1)
+    (path-segments
+     (if (or (zerop* s0) (zerop* s0))
+         (error (format nil "INNER-ANGLE undefined for ~a ~a" s0 s1))
+         (acos (/ (scalar-product s0 s1)
+                  (* (euklid (c- (cdr s0) (car s0)))
+                     (euklid (c- (cdr s1) (car s1))))))))
+    (t (error (format nil "INNER-ANGLE undefined for ~a ~a" s0 s1)))))
+
+(defun outer-angle (s0 s1)
+  "Return the outer angle of the XY-/XYZ path segments S) and S1."
+  (let ((res (ignore-errors (- (* 2 pi) (inner-angle s0 s1)))))
+    (if res res (error (format nil "OUTER-ANGLE undefined for ~a ~a" s0 s1)))))
 
 (defun c= (c1 c2)
   "Return numerical equality for numbers, XY-/XYZ-coordinates and paths."
@@ -407,24 +438,6 @@ The returned path is aligned with the axis X=0 and Y=0 in the upper right quadra
     (mapcar #'(lambda (c) (cons (+ offset (- (car c) (car delta)))
                                 (+ offset (- (cdr c) (cdr delta)))))
             path)))
-
-#|
-(defparameter box (car fingerjoints/tests::e-box))                    ;
-
-(setf box (group 3 (mapcar #'(lambda(c) (cons (coerce (car c) 'double-float) 
-                                              (coerce (cdr c) 'double-float))) 
-                           box)))
-
-(mapcar #'(lambda (c)                                              ;
-            (ignore-errors (shift-corner-+ 1.5d0 (car c) (cadr c) (caddr c)))) ;
-        box)                                    ;
-
-(remove-if #'null *)
-(fingerjoints:emitt *)
-
-(with-open-file (s "/home/dev/Desktop/box.scad" :direction :output :if-exists :supersede) (format s "~a" *))
-                                      ;
-|#
 
 (defun deg->rad (x) (* x (/ pi 180)))
 
