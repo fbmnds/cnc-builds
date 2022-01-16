@@ -214,7 +214,7 @@ XY-/XYZ-coordinates."
   "Return the inner angle of the XY-/XYZ path segments S) and S1."
   (typecase (list s0 s1)
     (path-segments
-     (if (or (zerop* s0) (zerop* s0))
+     (if (or (zerop* s0) (zerop* s1))
          (error (format nil "INNER-ANGLE undefined for ~a ~a" s0 s1))
          (acos (/ (scalar-product s0 s1)
                   (* (euklid (c- (cdr s0) (car s0)))
