@@ -488,13 +488,16 @@ ref. inner-path."
     (nreverse ret)))
 
 (defun emitt-gcode-coord (c &key (gx "G0") f)
-  "Return the Gcode for the XY-/XYZ-coordinate C with prefix GX and speed F."  
-  (let ((gc gx))
-    (unless (zerop* (c-x c)) (setf gc (format nil "~a X~3$" gc (c-x c))))
-    (unless (zerop* (c-y c)) (setf gc (format nil "~a Y~3$" gc (c-y c))))
-    (when (test-c-z c) (setf gc (format nil "~a Z~3$" gc (c-z c))))
-    (when f (setf gc (format nil "~a F~a" gc f)))
-    gc))
+  "Return the Gcode for the XY-/XYZ-coordinate C with prefix GX and speed F."
+  (typecase c
+    (coord
+     (let ((gc gx))
+       (unless (zerop* (c-x c)) (setf gc (format nil "~a X~3$" gc (c-x c))))
+       (unless (zerop* (c-y c)) (setf gc (format nil "~a Y~3$" gc (c-y c))))
+       (when (test-c-z c) (setf gc (format nil "~a Z~3$" gc (c-z c))))
+       (when f (setf gc (format nil "~a F~a" gc f)))
+       gc))
+    (t (error "EMITT-GCODE-COORD undefined for ~a" c))))
 
 (defun path-to-increments (path)
   "Return the increments of PATH beginning with the move to the second PATH 
@@ -506,28 +509,43 @@ coordinate and ending with the move to the last coordinate."
                        (mapcar #'(lambda (c) (cons c 0)) path)))))
     (path-xyz (butlast
                    (mapcar #'(lambda (s) (c- (cdr s) (car s)))
-                           (group-2 path))))))
+                           (group-2 path))))
+    (t (error "PATH-TO-INCREMENTS undefined for ~a" path))))
 
 (defun emitt-gcode-xyz (path f &optional (fz (round (* 0.8 f))))
   "Emitt the incremental GCODE beginning with the move to the second PATH 
 coordinate and ending with the move to the last coordinate."
-  (let* ((p (path-to-increments path))
-         (f-prev (if (test-c-z (car path)) fz f))
-         (gcode (list (emitt-gcode-coord (car path) :f f-prev))))
-    (dolist (c p)
-      (let ((f-set (if (zerop* (c-z c)) f fz)))
-        (if (= f-prev f-set)
-            (push (emitt-gcode-coord c) gcode)
-            (progn
-              (setf f-prev f-set)
-              (push (emitt-gcode-coord c :f f-set) gcode)))))
-    (nreverse gcode)))
+  (typecase path
+    (path
+     (let* ((p (path-to-increments path))
+            (f-prev (if (test-c-z (car p)) fz f))
+            (gcode (list (emitt-gcode-coord (car p) :f f-prev))))
+       (dolist (c (cdr p))
+         (let ((f-set (if (zerop* (c-z c)) f fz)))
+           (if (= f-prev f-set)
+               (push (emitt-gcode-coord c) gcode)
+               (progn
+                 (setf f-prev f-set)
+                 (push (emitt-gcode-coord c :f f-set) gcode)))))
+       (nreverse gcode)))
+    (t (error "EMITT-GCODE-XYZ undefined for ~a" path))))
 
-(defun emitt-gcode-xyz-from-origin
-    (path f &optional
-              (fz (round (* 0.8 f)))
-              (security-z 5))
+(defun emitt-gcode-xyz-from-zero (path f &optional
+                                           (fz (round (* 0.8 f)))
+                                           (security-z 5))
   "Emitt the incremental GCODE including the move from the origin to the 
 first PATH coordinate and ending with the move to the last coordinate."
-  ())
+  (when (< security-z 0)
+    (error "EMITT-GCODE-XYZ-FROM-ZERO: negative SECURITY-Z ~a" security-z))
+  (typecase path
+    (path
+     (let ((gcode (emitt-gcode-xyz path f fz)))
+       (if (zerop* (car path))
+           gcode
+           (progn
+             (push (format nil "G0 Z-~3$ F~a" security-z fz) gcode)
+             (push (format nil "G0 X~3$Y~3$ F~a"
+                           (c-x (car path)) (c-y (car path)) f) gcode)
+             (push (format nil "G0 Z~3$ F~a" security-z fz) gcode)))))
+    (t (error "EMITT-GCODE-XYZ-FROM-ZERO undefined for ~a" path))))
  
