@@ -487,40 +487,46 @@ ref. inner-path."
                     (push gc ret)))))))
     (nreverse ret)))
 
-(defun emitt-gcode-coord (c &key (gx "G0") f (eps 0.001))
+(defun emitt-gcode-coord (c &key (gx "G0") f)
   "Return the Gcode for the XY-/XYZ-coordinate C with prefix GX and speed F."  
   (let ((gc gx))
-    (unless (< (abs (c-x c)) eps) (setf gc (format nil "~a X~3$" gc (c-x c))))
-    (unless (< (abs (c-y c)) eps) (setf gc (format nil "~a Y~3$" gc (c-y c))))
-    (when (test-c-z c eps) (setf gc (format nil "~a Z~3$" gc (c-z c))))
+    (unless (zerop* (c-x c)) (setf gc (format nil "~a X~3$" gc (c-x c))))
+    (unless (zerop* (c-y c)) (setf gc (format nil "~a Y~3$" gc (c-y c))))
+    (when (test-c-z c) (setf gc (format nil "~a Z~3$" gc (c-z c))))
     (when f (setf gc (format nil "~a F~a" gc f)))
     gc))
 
-(defun emitt-gcode-xyz (path f &optional (fz (round (* 0.8 f))) (eps 0.001))
+(defun path-to-increments (path)
+  "Return the increments of PATH beginning with the move to the second PATH 
+coordinate and ending with the move to the last coordinate."
+  (typecase path
+    (path-xy (butlast
+              (mapcar #'(lambda (s) (c- (cdr s) (car s)))
+                      (group-2
+                       (mapcar #'(lambda (c) (cons c 0)) path)))))
+    (path-xyz (butlast
+                   (mapcar #'(lambda (s) (c- (cdr s) (car s)))
+                           (group-2 path))))))
+
+(defun emitt-gcode-xyz (path f &optional (fz (round (* 0.8 f))))
   "Emitt the incremental GCODE beginning with the move to the second PATH 
 coordinate and ending with the move to the last coordinate."
-  (let* ((p (typecase (car path)
-              (coord-xy (butlast
-                         (group-2
-                          (mapcar #'(lambda (c) (cons c 0)) path))))
-              (coord-xyz (butlast (group-2 path)))))
-         (f-prev (if (test-z (car p)) fz f))
-         (gcode (list (emitt-gcode-coord (car p) :f f-prev :eps eps))))
-    (dolist (c (cdr p))
-      (let* ((dc (c- (cdr c) (car c)))
-             (f-set (if (test-c-z dc) fz f)))
+  (let* ((p (path-to-increments path))
+         (f-prev (if (test-c-z (car path)) fz f))
+         (gcode (list (emitt-gcode-coord (car path) :f f-prev))))
+    (dolist (c p)
+      (let ((f-set (if (zerop* (c-z c)) f fz)))
         (if (= f-prev f-set)
-            (emitt-gcode-coord c :eps eps)
+            (push (emitt-gcode-coord c) gcode)
             (progn
               (setf f-prev f-set)
-              (push (emitt-gcode-coord c :f f-set :eps eps) gcode)))))
-    gcode))
+              (push (emitt-gcode-coord c :f f-set) gcode)))))
+    (nreverse gcode)))
 
 (defun emitt-gcode-xyz-from-origin
     (path f &optional
               (fz (round (* 0.8 f)))
-              (security-z 5)
-              (eps 0.001))
+              (security-z 5))
   "Emitt the incremental GCODE including the move from the origin to the 
 first PATH coordinate and ending with the move to the last coordinate."
   ())

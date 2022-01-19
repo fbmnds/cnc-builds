@@ -287,7 +287,27 @@
              :MAX-X 120.0 :MIN-X 0.0020939999 :AVG-X 60.15845
              :MAX-Y 119.99946 :MIN-Y 5.42E-4 :AVG-Y 58.692585)))
   (assert (c= (geometric-center spiral-01)
-              '(59.979214 . 58.75419))))
+              '(59.979214 . 58.75419)))
+  (let* ((path '((0 . 0) (250 . 0) (250 . 170) (0 . 170)))
+         (outer-path (close-path (shift-path-- 2 path)))
+         (path-increments (path-to-increments outer-path)))
+    (assert (equal outer-path
+                   '((252.0 . -2.0) (252.0 . 172.0)
+                     (-2.0 . 172.0) (-2.0 . -2.0)
+                     (252.0 . -2.0))))
+    (assert (equal path-increments
+                   '(((0.0 . 174.0) . 0.0)
+                     ((-254.0 . 0.0) . 0.0) ((0.0 . -174.0) . 0.0)
+                     ((254.0 . 0.0) . 0.0))))
+    ;;(paths/view:colored-multi-view
+    ;; (list (cons :white path) (cons :green outer-path))
+
+    (assert (equal (emitt-gcode-xyz outer-path 1200)
+                   '("G0 X252.000 Y-2.000 F1200"
+                     "G0 Y174.000"
+                     "G0 X-254.000"
+                     "G0 Y-174.000"
+                     "G0 X254.000")))))
 
 (defun run-view-tests ()
   (paths/view:view (car tbox) 100 100)
