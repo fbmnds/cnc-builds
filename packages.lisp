@@ -85,7 +85,6 @@
            #:optimize-relative-distances
            #:convert-path-dxyz
            #:convert-path-dxyz%
-           #:emitt-gcode-xy-z
            #:close-path
            #:optimize-microsteps
            #:optimize-path
@@ -98,6 +97,9 @@
            #:outer-path
            #:fill-pocket
            #:fill-inner-rectangle
+           #:path-to-increments           
+           #:emitt-gcode-xy-z
+           #:emitt-gcode-xyz
            ;; box
            #:round_d-3
            #:eql-c
