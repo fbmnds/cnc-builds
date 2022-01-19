@@ -100,6 +100,7 @@
            #:path-to-increments           
            #:emitt-gcode-xy-z
            #:emitt-gcode-xyz
+           #:emitt-gcode-xyz-from-zero
            ;; box
            #:round_d-3
            #:eql-c

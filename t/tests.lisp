@@ -116,9 +116,9 @@
                ((11.788854 . 5.894428) 20 . 10))))
     (assert (reduce #'(lambda (x y) (and x y))
                     (mapcar #'(lambda (x y)
-                        (if (equal :tag (car x))
-                            (c1-c2= (cdr x) (cdr y))
-                            (c1-c2= x y)))
+                                (if (equal :tag (car x))
+                                    (c1-c2= (cdr x) (cdr y))
+                                    (c1-c2= x y)))
                             ret (insert-tag c1-c2 2))))
     (assert (c= 4. (euklid (c- (cadadr ret) (cddadr ret))))))
   
@@ -283,9 +283,9 @@
                     (convert-path-dxyz square (group-2 square) 2.5 -0.5 5)
                     -0.5 1200))))
   (assert (equal (stats spiral-01)
-           '(:LEN 1799
-             :MAX-X 120.0 :MIN-X 0.0020939999 :AVG-X 60.15845
-             :MAX-Y 119.99946 :MIN-Y 5.42E-4 :AVG-Y 58.692585)))
+                 '(:LEN 1799
+                   :MAX-X 120.0 :MIN-X 0.0020939999 :AVG-X 60.15845
+                   :MAX-Y 119.99946 :MIN-Y 5.42E-4 :AVG-Y 58.692585)))
   (assert (c= (geometric-center spiral-01)
               '(59.979214 . 58.75419)))
   (let* ((path '((0 . 0) (250 . 0) (250 . 170) (0 . 170)))
@@ -303,8 +303,17 @@
     ;; (list (cons :white path) (cons :green outer-path))
 
     (assert (equal (emitt-gcode-xyz outer-path 1200)
-                   '("G0 X252.000 Y-2.000 F1200"
-                     "G0 Y174.000"
+                   '("G0 Y174.000 F1200"
+                     "G0 X-254.000"
+                     "G0 Y-174.000"
+                     "G0 X254.000")))
+    (assert (equal (emitt-gcode-xyz-from-zero outer-path 1200)
+                   '(;; move from ZERO
+                     "G0 Z5.000 F960"
+                     "G0 X252.000Y-2.000 F1200"
+                     "G0 Z-5.000 F960"
+                     ;; follow PATH
+                     "G0 Y174.000 F1200"
                      "G0 X-254.000"
                      "G0 Y-174.000"
                      "G0 X254.000")))))
