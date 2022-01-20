@@ -103,6 +103,8 @@ i.e. list of coordinate tuples for further processing."
 (deftype path-xyz () '(satisfies list-xyz-p))
 (deftype path () '(or path-xy path-xyz))
 
+(deftype vpath () '(vector float))
+
 (defun xy-xy-p (c) (and (consp c) (xy-p (car c)) (xy-p (cdr c))))
 (defun xyz-xyz-p (c) (and (consp c) (xyz-p (car c)) (xyz-p (cdr c))))
 
