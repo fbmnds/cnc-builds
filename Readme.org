@@ -15,16 +15,15 @@ Generated GCode is intentionally reduced to =linear=, =incremental= segments. Cu
 ** Usage
 
 #+begin_src common-lisp
-
   (require :asdf)
   (asdf:load-asd "/home/dev/projects/cnc-builds/cnc-builds.asd")
   (asdf:load-system :cnc-builds)
 
   ;; basic regression tests
-  (paths/box-tests:run-tests)
+  (paths/tests:run-tests)
 
   ;; visual regression tests
-  (paths/box-tests:run-view-tests)
+  (paths/tests:run-view-tests)
 
 #+end_src
 
@@ -47,9 +46,9 @@ Generated GCode is intentionally reduced to =linear=, =incremental= segments. Cu
 ~convert-path-dxyz%~ generates the list of =incremental= *XYZ* coordinates considering taps. Its internals do not allow for integrating *TICK*, for which it was deprecated.
 
 #+begin_src common-lisp
-  (in-package paths/emitt)
+  (in-package paths)
 
-  (defparameter path (car paths/box-tests::tbox))
+  (defparameter path (car paths/tests::tbox))
   (defparameter tags
     (remove-if #'(lambda (c) (< (euklid (c- (car c) (cdr c))) 6.)) (group-2 path)))
 
@@ -59,7 +58,6 @@ Generated GCode is intentionally reduced to =linear=, =incremental= segments. Cu
     (dolist (ln (emitt-gcode-xy-z
                  (convert-path-dxyz% path tags 1. -1. 5) -0.5 1200))
       (format f "~a~%" ln)))
-
 #+end_src
 
 The correctness of the generated GCode may e.g. verified with the visualizer of the *Universal GCode Sender*:
@@ -70,7 +68,7 @@ The *TAPs* are visible e.g. right below of the yellow cone and left of the "4 mm
 
 ** *TICK* and *TAP* combined
 *** Generate a *XY* path with *TICKs*
-- Construct a *XY* path with ~(car paths/box-tests::tbox)~
+- Construct a *XY* path with ~(car paths/tests::tbox)~
 - Calculate the *OUTER PATH* for an endmill of radius *R* by ~(shift-path-- r ...)~ 
 - Remove duplicate path points and join colinear path segments ~(optimize-path ...)~
 - Close the path ~(close-path ...)~
