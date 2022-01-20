@@ -123,22 +123,22 @@ with decreasing Z position in steps of DZ an feed F."
       (nreverse ret))))
 
 ;; TODO
-(defun optimize-microsteps (path &optional (eps 0.001))
+(defun optimize-microsteps (path)
   "Merge consecutive PATH segments recursively, iff the corresponding 
 first segment progresses less than EPS."
   path)
 
-(defun optimize-path (path &optional (eps 0.001))
+(defun optimize-path (path)
   "Merge consecutive PATH segments recursively, iff they are collinear."
   (let ((c0 (car path))
         (c1 (cadr path))
-        (p (optimize-microsteps path eps)))
+        (p (optimize-microsteps path)))
     (if (and c0 c1)
         (labels ((rec (rpath)
                    (let ((c2 (car rpath)))
                      (if c2
                          (progn
-                           (if (collinear-2d c0 c1 c2 eps)
+                           (if (collinear-2d c0 c1 c2)
                                (setf c1 c2)
                                (progn
                                  (push c0 p)
@@ -528,6 +528,26 @@ coordinate and ending with the move to the last coordinate."
                  (setf f-prev f-set)
                  (push (emitt-gcode-coord c :f f-set) gcode)))))
        (nreverse gcode)))
+    (vpath
+     (let ((len (/ (length path) 3)))
+       (when (< len 2) (error "EMITT-GCODE-XYZ undefined for ~a" path))
+       (flet ((dv (i)
+                (let ((i*3 (* 3 i))
+                      (j*3 (* 3 (mod (1+ i) len))))
+                  (cons (cons (- (aref path j*3) (aref path i*3))
+                              (- (aref path (1+ j*3)) (aref path (1+ i*3))))
+                        (- (aref path (+ 2 j*3)) (aref path (+ 2 i*3)))))))
+         (let* ((f-prev (if (zerop* (- (aref path 5) (aref path 2))) fz f))
+                (gcode (list (emitt-gcode-coord (dv 0) :f f-prev))))
+           (loop for i from 1 to (1- len) do
+             (let* ((c (dv i))
+                    (f-set (if (zerop* (c-z c)) f fz)))
+               (if (= f-prev f-set)
+                   (push (emitt-gcode-coord c) gcode)
+                   (progn
+                     (setf f-prev f-set)
+                     (push (emitt-gcode-coord c :f f-set) gcode)))))
+           (nreverse gcode)))))
     (t (error "EMITT-GCODE-XYZ undefined for ~a" path))))
 
 (defun emitt-gcode-xyz-from-zero (path f &optional
@@ -543,9 +563,19 @@ first PATH coordinate and ending with the move to the last coordinate."
        (if (zerop* (car path))
            gcode
            (progn
-             (push (format nil "G0 Z-~3$ F~a" security-z fz) gcode)
+             (push (format nil "G090 Z-~3$ F~a" security-z fz) gcode)
              (push (format nil "G0 X~3$Y~3$ F~a"
                            (c-x (car path)) (c-y (car path)) f) gcode)
-             (push (format nil "G0 Z~3$ F~a" security-z fz) gcode)))))
+             (push (format nil "G091 Z~3$ F~a" security-z fz) gcode)))))
+    (vpath
+     (let ((gcode (emitt-gcode-xyz path f fz)))
+       (if (zerop* (cons (cons (aref path 0) (aref path 1)) (aref path 2)))
+           gcode
+           (progn
+             (push (format nil "G0G91 Z-~3$ F~a" security-z fz) gcode)
+             (push (format nil "G0 X~3$Y~3$ F~a"
+                           (aref path 0) (aref path 1) f) gcode)
+             (push (format nil "G0G90 Z~3$ F~a" security-z fz) gcode)))))
     (t (error "EMITT-GCODE-XYZ-FROM-ZERO undefined for ~a" path))))
  
+
