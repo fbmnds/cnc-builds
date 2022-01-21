@@ -298,12 +298,12 @@ XY-/XYZ-coordinates."
 ;; deprecated
 (defun collinear-2d (c0 c1 c2)
   "Return the segment (C0 . C2), iff the XY-coordinates C0, C1 and C2 are collinear."
-  (let ((x1 (car c0))
-        (y1 (cdr c0))
-        (x2 (car c1))
-        (y2 (cdr c1))
-        (x3 (car c2))
-        (y3 (cdr c2)))
+  (let ((x1 (c-x c0))
+        (y1 (c-y c0))
+        (x2 (c-x c1))
+        (y2 (c-y c1))
+        (x3 (c-x c2))
+        (y3 (c-y c2)))
     (when (> *precision*
              (abs (+ (* x1 (- y2 y3))
                      (* x2 (- y3 y1))
