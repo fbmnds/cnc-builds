@@ -564,10 +564,10 @@ first PATH coordinate and ending with the move to the last coordinate."
        (if (zerop* (car path))
            gcode
            (progn
-             (push (format nil "G091 Z-~3$ F~a" security-z fz) gcode)
+             (push (format nil "G0G91 Z-~3$ F~a" security-z fz) gcode)
              (push (format nil "G0 X~3$Y~3$ F~a"
                            (c-x (car path)) (c-y (car path)) f) gcode)
-             (push (format nil "G090 Z~3$ F~a" security-z fz) gcode)))))
+             (push (format nil "G0G90 Z~3$ F~a" security-z fz) gcode)))))
     (vpath
      (let ((gcode (emitt-gcode-xyz path f fz)))
        (if (zerop* (cons (cons (aref path 0) (aref path 1)) (aref path 2)))
