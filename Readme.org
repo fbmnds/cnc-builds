@@ -12,7 +12,12 @@ A library for 2.5D CNC.
 - A *TICK* is a tiny *PATH SEGMENT* pair that pushed forth and back into a *XY* corner.The purpose of a *TICK* is to avoid manual post-processing of a milled piece. They are currently only implemented for 90⁰ *XY* aligned corners.
 
 Generated GCode is intentionally reduced to =linear=, =incremental= segments. Curvatures are handled by means of pre-processing with the tools of this library.
-  
+
+:Note:
+There should be a ~CPATH~ like ~(inc-coord . abs-coord)~, maybe containing the line indeces and GCode lines as well, for repositioning the mill during machining.
+:END:
+
+
 ** Usage
 
 #+begin_src common-lisp
